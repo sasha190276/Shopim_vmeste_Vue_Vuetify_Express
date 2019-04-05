@@ -1,6 +1,6 @@
 const express = require('express');
-const TABLE_CONF = require('./headers_smpl_import');
-const depHead = require('./depHeaders');
+// const TABLE_CONF = require('./headers_smpl_import');
+// const depHead = require('./depHeaders');
 
 const router = express.Router();
 const db = require('../db');
