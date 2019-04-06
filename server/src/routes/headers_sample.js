@@ -9,14 +9,16 @@ router.get('/headers_sample', async (req, res) => {
   const tableConfig = {};
   tableConfig.headersOfTable = {};
   tableConfig.depForChangeValueHeaders = [];
-  const headers = await db.getDb().collection('headers_sample').find({}).toArray();
+  const headers = await db.getDb().collection('headers_sample').find({}, { fields: { _id: 0 } }).toArray();
   headers.forEach((header) => {
     const {
-      name, require, content, defValue, depForSetDefault,
+      name, depForSetDefault,
     } = { ...header };
-    tableConfig.headersOfTable[name] = { require, content, defValue };
+    tableConfig.headersOfTable[name] = { ...header };
+    console.log(tableConfig);
     if (depForSetDefault) tableConfig.depForChangeValueHeaders.push(name);
   });
+  console.log(tableConfig);
   res.send(tableConfig);
 });
 router.put('/headers_sample', async (req, res) => {

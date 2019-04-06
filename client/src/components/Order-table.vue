@@ -488,7 +488,6 @@ export default {
           depForSetDefault: false
         };
         this.headersOfTable[colName] = newHeader;
-        console.log('newHeader');
         await TableHeaders.fetchHeadersSampleUpdate(newHeader);
       }
       this.closeCreateCol();
