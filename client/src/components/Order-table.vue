@@ -42,7 +42,7 @@
     <v-layout elevation-4 class="white">
       <v-flex md12 col>
         <v-toolbar color="primary" dark>
-          <v-toolbar-title>{{nameOfTable}}</v-toolbar-title>
+          <v-toolbar-title>{{ nameOfTable }}</v-toolbar-title>
           <v-divider class="mx-2" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-btn
@@ -313,14 +313,15 @@
 </template>
 
 <script>
+import TableHeaders from "../services/TableHeaders";
+
 export default {
   name: "my-table",
   props: {
     config: Object,
     nameOfTable: String,
     table: Array,
-    headers: Array,
-  //  headersOfTable: Object // todo думаю надо вынести в CONFIG
+    headers: Array
   },
   data: () => ({
     headersOfTable: {},
@@ -384,6 +385,7 @@ export default {
   },
   computed: {
     haveError: function() {
+      console.log("haveError");
       let statusError = !!this.errorList.filter(e => e.list.length !== 0)
         .length;
       this.$emit("tableErrorStatus", statusError);
@@ -427,6 +429,7 @@ export default {
     },
     table: {
       handler: function() {
+        console.log("table_change");
         this.markNumberCol();
         this.validateAllCells();
       },
@@ -434,6 +437,7 @@ export default {
     },
     headers: {
       handler: function() {
+        console.log("headers_change");
         this.checkHeaders();
         this.validateAllCells();
         this.createdItemDefault["Номер столбца"] = this.headers.length + 1;
@@ -445,6 +449,7 @@ export default {
   methods: {
     // проверка ряда на наличие ошибок в значениях
     checkErrRow: function(index) {
+      console.log("checkErrRow");
       return this.cellsByRow[index - 1].includes(false);
     },
     // закрытие окна изменений в таблицы
@@ -455,7 +460,7 @@ export default {
       }, 300);
     },
     // сохранение изменений в таблицу
-    saveCreateCol: function() {
+    saveCreateCol: async function() {
       let colName = this.createdItem["Имя"];
       let colValue = this.createdItem["Значение по умолчанию"];
       let position = this.createdItem["Номер столбца"] + 1;
@@ -466,20 +471,26 @@ export default {
       }
       let type = this.createdItem["Тип данных"];
       let header = { text: colName, value: colName, sortable: false };
-      this.table[0][colName] === undefined
-        ? this.table.forEach(e => (e[colName] = colValue))
-        : "";
+      if (this.table[0][colName] === undefined) {
+        this.table.forEach(e => this.$set(e, colName, colValue)); //e[colName] = colValue);
+      }
 
-      this.headersOfTable[colName] === undefined
-        ? (this.headersOfTable[colName] = {
-            require: false,
-            content: type,
-            defValue: ""
-          })
-        : "";
       this.headersFlag[colName] === undefined
         ? this.headers.splice(position - 1, 0, header)
         : "";
+
+      if (this.headersOfTable[colName] === undefined) {
+        let newHeader = {
+          name: colName,
+          require: false,
+          content: type,
+          defValue: "",
+          depForSetDefault: false
+        };
+        this.headersOfTable[colName] = newHeader;
+        console.log('newHeader');
+        await TableHeaders.fetchHeadersSampleUpdate(newHeader);
+      }
       this.closeCreateCol();
     },
     //todo закрытие окна для заполнения столбца значениями по умолчанию
@@ -621,6 +632,7 @@ export default {
     },
     // создание массива с результатами валидации ячеек
     validateAllCells: function() {
+      console.log("validateAllCells");
       this.cellsByRow = [];
       for (let i = 0; i < this.table.length; i++) {
         this.cellsByRow[i] = [];

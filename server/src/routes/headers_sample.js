@@ -19,6 +19,13 @@ router.get('/headers_sample', async (req, res) => {
   });
   res.send(tableConfig);
 });
+router.put('/headers_sample', async (req, res) => {
+  const collection = await db.getDb().collection('headers_sample');
+  if (await collection.findOne({ name: req.body.name })) return;
+  await collection.insertOne(req.body);
+});
+
+
 router.get('/setHeaders', async (req, res) => {
   // let collection = await db.getDb().collection('temp');
   // console.log(collection);

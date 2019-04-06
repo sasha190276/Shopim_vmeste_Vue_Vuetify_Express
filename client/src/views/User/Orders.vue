@@ -198,15 +198,18 @@ export default {
         currency: this.currency,
         exchange: this.exchange
       };
+      console.log(this.table);
       this.table.forEach(row => {
+        console.log('submit');
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
         rowResult.yearOfSale = this.yearOfSale;
+        console.log(row);
         for (let key in row) {
           if (key === "None" || key === "№") continue;
           if (
             row[key] !== "" &&
-            this.headersOfTable[key].content === "number"
+            this.table_conf.headersOfTable[key].content === "number"
           ) {
             typeof row[key] === "string"
               ? (row[key] = +row[key].replace(/,/, "."))
@@ -222,7 +225,11 @@ export default {
         rowResult.shipping["Курс доставки"] = this.exchangeShipping;
         rowResult.orderOptions = orderOptions;
         result.push(rowResult);
+        console.log(result);
+
       });
+
+
     },
 
     // очистка формы

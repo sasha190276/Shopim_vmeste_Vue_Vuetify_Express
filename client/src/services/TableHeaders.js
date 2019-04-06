@@ -3,5 +3,8 @@ export default {
   async fetchHeadersSample() {
     let result = await api().get("headers_sample");
     return result.data;
+  },
+  async fetchHeadersSampleUpdate(header) {
+    await api().put("headers_sample", header);
   }
 };
