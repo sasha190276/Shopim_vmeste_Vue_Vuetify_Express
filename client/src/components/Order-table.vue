@@ -647,9 +647,18 @@ export default {
           return;
         }
         for (let j = 0; j < this.table.length; j++) {
-          this.cellsByRow[j][i] =
-            this.table[j][e.value] === "" ||
-            /^[0-9]+([.,][0-9]+)?$/.test(this.table[j][e.value]);
+          let num = this.table[j][e.value];
+          if (typeof num === "string") {
+            num = +num.replace(/,/, ".");
+            if (/^[0-9]+[.,]$/.test(num)) {
+              num = +num.replace(/[.]/, "");
+            }
+            this.cellsByRow[j][i] =
+              num === "" || /^[0-9]+([.][0-9]+)?$/.test(num);
+            if (this.cellsByRow[j][i] && num !== "") {
+              this.table[j][e.value] = this.gaussRound(num, 2);
+            }
+          }
         }
       });
       this.setRowWithError();
@@ -699,6 +708,21 @@ export default {
       this.cellsByRow.forEach((e, i) =>
         e.includes(false) ? this.rowWithError.push(i + 1) : ""
       );
+    },
+    gaussRound(num, decimalPlaces) {
+      var d = decimalPlaces || 0,
+        m = Math.pow(10, d),
+        n = +(d ? num * m : num).toFixed(8),
+        i = Math.floor(n),
+        f = n - i,
+        e = 1e-8,
+        r =
+          f > 0.5 - e && f < 0.5 + e
+            ? i % 2 === 0
+              ? i
+              : i + 1
+            : Math.round(n);
+      return d ? r / m : r;
     }
   }
 };

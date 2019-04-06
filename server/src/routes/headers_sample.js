@@ -24,7 +24,8 @@ router.get('/headers_sample', async (req, res) => {
 router.put('/headers_sample', async (req, res) => {
   const collection = await db.getDb().collection('headers_sample');
   if (await collection.findOne({ name: req.body.name })) return;
-  await collection.insertOne(req.body);
+  const result = await collection.insertOne(req.body);
+  res.send(result);
 });
 
 
