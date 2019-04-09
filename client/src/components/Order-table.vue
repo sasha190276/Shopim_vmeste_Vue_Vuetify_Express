@@ -637,6 +637,10 @@ export default {
         this.cellsByRow[i] = [];
       }
       this.headers.forEach((e, i) => {
+
+        //todo вычисление значения ячейки
+
+
         if (
           this.headersOfTable[e.value] === undefined ||
           this.headersOfTable[e.value].content !== "number"
@@ -648,16 +652,19 @@ export default {
         }
         for (let j = 0; j < this.table.length; j++) {
           let num = this.table[j][e.value];
-          if (typeof num === "string") {
-            num = +num.replace(/,/, ".");
-            if (/^[0-9]+[.,]$/.test(num)) {
-              num = +num.replace(/[.]/, "");
+
+          if (typeof num === "string" && num !== "") {
+            if (/^[0-9]+([.,]([0-9]+)?)?$/.test(num)) {
+              num = /^[0-9]+[.,]$/.test(num)
+                ? +num.replace(/[.,]/, "")
+                : +num.replace(/,/, ".");
             }
-            this.cellsByRow[j][i] =
-              num === "" || /^[0-9]+([.][0-9]+)?$/.test(num);
-            if (this.cellsByRow[j][i] && num !== "") {
-              this.table[j][e.value] = this.gaussRound(num, 2);
-            }
+          }
+          if (typeof num === "number") {
+            this.table[j][e.value] = this.gaussRound(num, 2);
+            this.cellsByRow[j][i] = true;
+          } else {
+            num !== "" ? (this.cellsByRow[j][i] = false) : "";
           }
         }
       });

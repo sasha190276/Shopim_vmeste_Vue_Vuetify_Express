@@ -1,6 +1,8 @@
 const express = require('express');
 // const TABLE_CONF = require('./headers_smpl_import');
 // const depHead = require('./depHeaders');
+const { EJSON } = require('bson');
+const { Code } = require('mongodb');
 
 const router = express.Router();
 const db = require('../db');
@@ -30,8 +32,24 @@ router.put('/headers_sample', async (req, res) => {
 
 
 router.get('/setHeaders', async (req, res) => {
-  // let collection = await db.getDb().collection('temp');
-  // console.log(collection);
+  const collection = await db.getDb().collection('headers_sample');
+  //   // const headers = await collection.find({}).toArray();
+  //   // headers.forEach((e) => {
+  //   //   e.calculate = false;
+  //   //   collection.update({ name: e.name }, { $set: { calculate: false } });
+  //   // });
+  // const myFunc = EJSON.serialize({ func(c) { console.log(c); } });
+  // console.log(myFunc);
+  collection.updateOne({ name: 'Итого' }, { $set: { calculate: new Code((a) => { console.log(a); }, (a) => { console.log(a); }) } });
+  const aaa = await collection.findOne({ name: 'Итого' });
+  //const a = EJSON.deserialize(aaa.calculate);
+  console.log(aaa.calculate);
+  // const b = a.code();
+  // console.log(b);
+  // const result = await collection.updateMany({}, headers, { upsert: true });
+  // const myFunc = function (a) { console.log(a); };
+  // const result = await collection.findOneAndUpdate({ name: 'Итого' }, { $set: { calculate: myFunc } });
+  // console.log(result);
   // await db.getDb().createCollection('headers_sample');
   // const headers = [];
   // for (const key in TABLE_CONF) {
@@ -43,6 +61,5 @@ router.get('/setHeaders', async (req, res) => {
   //   headers.push(header);
   // }
   // const result = await db.getDb().collection('headers_sample').insertMany(headers);
-
 });
 module.exports = router;
