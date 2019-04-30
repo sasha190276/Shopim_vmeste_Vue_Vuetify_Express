@@ -40,10 +40,16 @@ router.get('/setHeaders', async (req, res) => {
   //   // });
   // const myFunc = EJSON.serialize({ func(c) { console.log(c); } });
   // console.log(myFunc);
-  collection.updateOne({ name: 'Итого' }, { $set: { calculate: new Code((a) => { console.log(a); }, (a) => { console.log(a); }) } });
-  const aaa = await collection.findOne({ name: 'Итого' });
-  //const a = EJSON.deserialize(aaa.calculate);
-  console.log(aaa.calculate);
+  collection.insertOne({ name: 'New_3', calculate: a => console.log(a) }, { serializeFunctions: true });
+  collection.insertOne({ name: 'New_4', calculate: new Code((a) => { console.log(a); }) });
+  // collection.updateOne({ name: 'Итого' }, { $set: { calculate: new Code((a) => { console.log(a); }, (a) => { console.log(a); }) } });
+  // const aaa = await collection.findOne({ name: 'Итого' });
+  const a = await collection.findOne({ name: 'New' });
+  const b = await collection.findOne({ name: 'New_2' });
+  // const a = EJSON.deserialize(aaa.calculate);
+  console.log(a.calculate);
+  console.log(b.calculate);
+
   // const b = a.code();
   // console.log(b);
   // const result = await collection.updateMany({}, headers, { upsert: true });

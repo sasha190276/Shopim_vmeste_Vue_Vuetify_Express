@@ -304,7 +304,7 @@ export default {
     // изменение ключа в таблице
     changeKey: function(oldKey, newKey) {
       this.table.forEach(row => {
-        row[newKey] = row[oldKey];
+        this.$set(row, newKey, row[oldKey]);
         delete row[oldKey];
       });
     }

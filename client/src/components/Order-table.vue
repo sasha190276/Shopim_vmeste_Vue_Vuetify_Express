@@ -379,6 +379,7 @@ export default {
     this.checkHeaders();
     this.markNumberCol();
     this.validateAllCells();
+    this.calcAllTotal();
   },
   mounted() {
     this.editedItem = this.headersForEditAndCreateItems();
@@ -430,8 +431,7 @@ export default {
     table: {
       handler: function() {
         console.log("table_change");
-        this.markNumberCol();
-        this.validateAllCells();
+        //this.validateAllCells();
       },
       deep: true
     },
@@ -440,6 +440,7 @@ export default {
         console.log("headers_change");
         this.checkHeaders();
         this.validateAllCells();
+        this.calcAllTotal();
         this.createdItemDefault["Номер столбца"] = this.headers.length + 1;
         this.closeCreateCol();
       },
@@ -447,6 +448,32 @@ export default {
     }
   },
   methods: {
+    // подсчет значения ИТОГО
+    calcTotal: function(row) {
+      if (
+        row["Цена"] === undefined ||
+        typeof row["Цена"] !== "number" ||
+        row["Количество"] === undefined ||
+        typeof row["Количество"] !== "number"
+      ) {
+        console.log("цена- undefined" + !!row["Цена"]);
+        console.log("typeof" + typeof row["Цена"]);
+        console.log("количество- undefined" + !!row["Цена"]);
+        console.log("typeof2" + typeof row["Количество"]);
+        row["Итого"] = "Err";
+      } else {
+        let total = row["Цена"] * row["Количество"];
+        row["Итого"] = this.gaussRound(total, 2);
+      }
+    },
+    // расчет всех строк ИТОГО
+    calcAllTotal: function() {
+      console.log("calcAllTotal");
+      this.table.forEach(e =>
+        e["Итого"] !== undefined ? this.calcTotal(e) : ""
+      );
+    },
+
     // проверка ряда на наличие ошибок в значениях
     checkErrRow: function(index) {
       console.log("checkErrRow");
@@ -490,6 +517,8 @@ export default {
         this.headersOfTable[colName] = newHeader;
         await TableHeaders.fetchHeadersSampleUpdate(newHeader);
       }
+      //this.calcAllTotal();
+      //this.validateAllCells();
       this.closeCreateCol();
     },
     //todo закрытие окна для заполнения столбца значениями по умолчанию
@@ -505,6 +534,8 @@ export default {
       let header = this.headers.filter(e => e.value === this.colForFill)[0]
         .value;
       this.table.forEach(e => (e[header] = this.defaultFillCol));
+      this.validateAllCells();
+      this.calcAllTotal();
       this.closeAddDefaultValue();
     },
     close() {
@@ -514,16 +545,21 @@ export default {
         this.editedIndex = -1;
       }, 300);
     },
-    // сохранение изменений в таблицу
+    // TODO сохранение изменений в таблицу
     saveCrud() {
       if (this.editedIndex > -1) {
         Object.assign(this.table[this.editedIndex], this.editedItem);
       } else {
         this.table.push(this.editedItem);
+        this.markNumberCol();
       }
+      console.log("saveCrud");
+
+      this.validateAllCells();
+      this.calcAllTotal();
       this.close();
     },
-    // возврат цвета заголовка
+    // TODO возврат цвета заголовка
     text_color: function(header, markStyleArr) {
       let [notImportStyle, doubleValueStyle, depStyle] = markStyleArr;
       let style = "";
@@ -545,6 +581,7 @@ export default {
       let value = this.headers.splice(index, 1);
       this.headers.splice(index + direction, 0, value[0]);
     },
+    //todo удаление столбца
     deleteCol(index) {
       confirm("Are you sure you want to delete this item?") &&
         this.headers.splice(index, 1);
@@ -587,6 +624,8 @@ export default {
       const index = this.table.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
         this.table.splice(index, 1);
+      this.markNumberCol();
+      this.validateAllCells();
     },
     closeChangeHeader: function() {
       setTimeout(() => {
@@ -596,10 +635,11 @@ export default {
     markNumberCol: function() {
       this.table.forEach((e, i, arr) => (arr[i]["№"] = i + 1));
     },
-    // изменение ключа в таблице
+    // todo изменение ключа в таблице
     changeKey: function(oldKey, newKey) {
       this.table.forEach(row => {
-        row[newKey] = row[oldKey];
+        this.$set(row, newKey, row[oldKey]);
+        //row[newKey] = row[oldKey];
         delete row[oldKey];
       });
     },
@@ -630,6 +670,8 @@ export default {
       this.validAllHeaders(); // проверка заголовков на наличие ошибок
     },
     // создание массива с результатами валидации ячеек
+    //todo не проверять столбец ИТОГО после восстановления всех значений строка остается красной
+
     validateAllCells: function() {
       console.log("validateAllCells");
       this.cellsByRow = [];
@@ -637,9 +679,7 @@ export default {
         this.cellsByRow[i] = [];
       }
       this.headers.forEach((e, i) => {
-
         //todo вычисление значения ячейки
-
 
         if (
           this.headersOfTable[e.value] === undefined ||
@@ -668,6 +708,7 @@ export default {
           }
         }
       });
+      //this.calcAllTotal();
       this.setRowWithError();
     },
     // валидация ячейки
