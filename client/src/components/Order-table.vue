@@ -466,11 +466,12 @@ export default {
   watch: {
     optionsOfSale: {
       handler: function() {
-        this.exchangeCourse = +this.exchange || 1;
-        this.exchangeCourseShipping = +this.exchangeShipping || 1;
-        this.priceWeight = +this.pricePerKg || 0;
-        this.priceCategoryInner = this.priceCategory.map(e => +e || 0);
-
+        console.log('optionsOfSale_watch');
+        this.exchangeCourse = +this.optionsOfSale.exchange || 1;
+        this.exchangeCourseShipping = +this.optionsOfSale.exchangeShipping || 1;
+        this.priceWeight = +this.optionsOfSale.pricePerKg || 0;
+        this.priceCategoryInner = this.optionsOfSale.priceCategory.map(e => +e || 0);
+console.log('+++'+ this.exchangeCourse);
         this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
@@ -524,32 +525,28 @@ export default {
       } else {
         let priceCat =
           row["Категория цен"] !== undefined &&
-          typeof +row["Категория цен"] === "number" &&
-          +this.optionsOfSale.priceCategory[row["Категория цен"] - 1] ===
-            +this.optionsOfSale.priceCategory[row["Категория цен"] - 1]
-            ? this.optionsOfSale.priceCategory[row["Категория цен"] - 1]
+          typeof +row["Категория цен"] === "number"
+          ? this.priceCategoryInner[row["Категория цен"] - 1]
             : 0;
 
         let total = row["Цена"] * row["Количество"];
         total =
-          (total + (total / 100) * priceCat) * this.optionsOfSale.exchange;
+          (total + (total / 100) * priceCat) * this.exchangeCourse;
         row["Итого"] = this.gaussRound(total, 2);
       }
     },
     calcDelivery: function(row) {
       if (
         row["Вес"] === undefined ||
-        typeof row["Вес"] !== "number" ||
-        typeof +this.optionsOfSale.exchangeShipping !== "number" ||
-        typeof +this.optionsOfSale.pricePerKg !== "number"
+        typeof row["Вес"] !== "number"
       ) {
         row["Доставка"] = "";
       } else {
         //console.log('--'+row["Вес"]+'--'+this.optionsOfSale.pricePerKg+'--'+this.optionsOfSale.exchangeShipping);
         let total =
           row["Вес"] *
-          this.optionsOfSale.pricePerKg *
-          this.optionsOfSale.exchangeShipping;
+          this.priceWeight *
+          this.exchangeCourseShipping;
         row["Доставка"] = this.gaussRound(total, 2) || "";
       }
     },
