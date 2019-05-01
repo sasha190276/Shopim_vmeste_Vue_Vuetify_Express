@@ -281,21 +281,54 @@
                   </v-icon>
                 </td>
 
-                <td v-for="header in headers" v-bind:key="header.value">
-                  <span
-                    :class="[
-                      {
-                        textWithError: !validCell(
+                <td
+                  v-for="header in headers"
+                  v-bind:key="header.value"
+                  :nowrap="
+                    checkCurrencyTextNeed(
+                      header.value,
+                      props.item[header.value]
+                    )
+                  "
+                >
+                  <span>
+                    <!--style="white-space: nowrap"-->
+                    <span
+                      :class="[
+                        {
+                          textWithError: !validCell(
+                            header.value,
+                            props.item[header.value]
+                          )
+                        },
+                        {
+                          textNotImport: headersFlag[header.value]['notImport']
+                        }
+                      ]"
+                    >
+                      {{ props.item[header.value] }}
+                    </span>
+                    <span
+                      v-if="
+                        header.value === 'Итого' &&
+                          checkCurrencyTextNeed(
+                            header.value,
+                            props.item[header.value]
+                          )
+                      "
+                    >
+                      {{ " руб." }}
+                    </span>
+                    <span
+                      v-else-if="
+                        checkCurrencyTextNeed(
                           header.value,
                           props.item[header.value]
                         )
-                      },
-                      {
-                        textNotImport: headersFlag[header.value]['notImport']
-                      }
-                    ]"
-                  >
-                    {{ props.item[header.value] }}
+                      "
+                    >
+                      {{ " " + optionsOfSale.currency }}
+                    </span>
                   </span>
                 </td>
               </tr>
@@ -321,7 +354,8 @@ export default {
     config: Object,
     nameOfTable: String,
     table: Array,
-    headers: Array
+    headers: Array,
+    optionsOfSale: Object
   },
   data: () => ({
     headersOfTable: {},
@@ -379,10 +413,14 @@ export default {
     this.checkHeaders();
     this.markNumberCol();
     this.validateAllCells();
-    this.calcAllTotal();
+    this.calculateCells();
+    // this.calcAllTotal();
+    // this.calcAllDelivery();
   },
   mounted() {
     this.editedItem = this.headersForEditAndCreateItems();
+
+    console.log(this.optionsOfSale);
   },
   computed: {
     haveError: function() {
@@ -422,6 +460,14 @@ export default {
     }
   },
   watch: {
+    optionsOfSale: {
+      handler: function() {
+        this.calculateCells();
+        // this.calcAllTotal();
+        // this.calcAllDelivery();
+      },
+      deep: true
+    },
     dialog(val) {
       val || this.close();
     },
@@ -440,7 +486,9 @@ export default {
         console.log("headers_change");
         this.checkHeaders();
         this.validateAllCells();
-        this.calcAllTotal();
+        this.calculateCells();
+        // this.calcAllTotal();
+        // this.calcAllDelivery();
         this.createdItemDefault["Номер столбца"] = this.headers.length + 1;
         this.closeCreateCol();
       },
@@ -448,6 +496,12 @@ export default {
     }
   },
   methods: {
+    calculateCells: function() {
+      this.table.forEach(e => {
+        e["Итого"] !== undefined ? this.calcTotal(e) : "";
+        e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
+      });
+    },
     // подсчет значения ИТОГО
     calcTotal: function(row) {
       if (
@@ -456,24 +510,31 @@ export default {
         row["Количество"] === undefined ||
         typeof row["Количество"] !== "number"
       ) {
-        console.log("цена- undefined" + !!row["Цена"]);
-        console.log("typeof" + typeof row["Цена"]);
-        console.log("количество- undefined" + !!row["Цена"]);
-        console.log("typeof2" + typeof row["Количество"]);
         row["Итого"] = "Err";
       } else {
-        let total = row["Цена"] * row["Количество"];
+        let total =
+          row["Цена"] * row["Количество"] * this.optionsOfSale.exchange;
+        console.log(this.optionsOfSale.exchange);
         row["Итого"] = this.gaussRound(total, 2);
       }
     },
-    // расчет всех строк ИТОГО
-    calcAllTotal: function() {
-      console.log("calcAllTotal");
-      this.table.forEach(e =>
-        e["Итого"] !== undefined ? this.calcTotal(e) : ""
-      );
+    calcDelivery: function(row) {
+      if (
+        row["Вес"] === undefined ||
+        typeof row["Вес"] !== "number" ||
+        typeof +this.optionsOfSale.exchangeShipping !== "number" ||
+        typeof +this.optionsOfSale.pricePerKg !== "number"
+      ) {
+        row["Доставка"] = "";
+      } else {
+        //console.log('--'+row["Вес"]+'--'+this.optionsOfSale.pricePerKg+'--'+this.optionsOfSale.exchangeShipping);
+        let total =
+          row["Вес"] *
+          this.optionsOfSale.pricePerKg *
+          this.optionsOfSale.exchangeShipping;
+        row["Доставка"] = this.gaussRound(total, 2) || "";
+      }
     },
-
     // проверка ряда на наличие ошибок в значениях
     checkErrRow: function(index) {
       console.log("checkErrRow");
@@ -535,7 +596,9 @@ export default {
         .value;
       this.table.forEach(e => (e[header] = this.defaultFillCol));
       this.validateAllCells();
-      this.calcAllTotal();
+      this.calculateCells();
+      // this.calcAllTotal();
+      // this.calcAllDelivery();
       this.closeAddDefaultValue();
     },
     close() {
@@ -556,7 +619,9 @@ export default {
       console.log("saveCrud");
 
       this.validateAllCells();
-      this.calcAllTotal();
+      this.calculateCells();
+      // this.calcAllTotal();
+      // this.calcAllDelivery();
       this.close();
     },
     // TODO возврат цвета заголовка
@@ -683,6 +748,7 @@ export default {
 
         if (
           this.headersOfTable[e.value] === undefined ||
+          e.value === "Итого" ||
           this.headersOfTable[e.value].content !== "number"
         ) {
           for (let j = 0; j < this.table.length; j++) {
@@ -710,6 +776,13 @@ export default {
       });
       //this.calcAllTotal();
       this.setRowWithError();
+    },
+    // todo проверка нужно ли выводить валюту
+    checkCurrencyTextNeed: function(headerValue, value) {
+      return (
+        ["Цена", "Итого"].includes(headerValue) &&
+        this.validCell(headerValue, value)
+      );
     },
     // валидация ячейки
     validCell: function(headerValue, value) {

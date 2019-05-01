@@ -75,6 +75,17 @@
               <v-flex>
                 <v-text-field
                   type="text"
+                  v-model="pricePerKg"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('pricePerKg')"
+                  label="Price per KG"
+                  data-vv-name="pricePerKg"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  type="text"
                   v-model="exchangeShipping"
                   v-validate="'required|decimal:2'"
                   :error-messages="errors.collect('exchangeShipping')"
@@ -97,6 +108,13 @@
         name-of-table="Таблица заказов!!!"
         :table="table"
         :headers="headers"
+        :optionsOfSale="{
+          yearOfSale,
+          currency,
+          exchange,
+          exchangeShipping,
+          pricePerKg
+        }"
         @tableErrorStatus="val => (this.haveErrInTable = val)"
       ></my-table>
     </v-flex>
@@ -115,10 +133,11 @@ export default {
     // todo поля блока с параметрами закупки
     nameOfSale: "",
     yearOfSale: "",
-    currency: "Dollar $",
+    currency: "$",
     exchange: 1,
+    pricePerKg: 0,
     exchangeShipping: 1,
-    currencyItems: ["Dollar $", "Euro", "Pound", "Roubles"],
+    currencyItems: ["$", "Eur", "Pound", "Rub"],
     // todo словарь для VeeValidate
     dictionary: {
       attributes: {
@@ -135,6 +154,10 @@ export default {
           required: "Select field is required"
         },
         exchange: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        pricePerKg: {
           required: "Select field is required",
           decimal: "Поле должно содержать число"
         },
@@ -200,7 +223,7 @@ export default {
       };
       console.log(this.table);
       this.table.forEach(row => {
-        console.log('submit');
+        console.log("submit");
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
         rowResult.yearOfSale = this.yearOfSale;
@@ -226,10 +249,7 @@ export default {
         rowResult.orderOptions = orderOptions;
         result.push(rowResult);
         console.log(result);
-
       });
-
-
     },
 
     // очистка формы
@@ -244,6 +264,7 @@ export default {
     },
     // загрузка и обработка EXCEL таблицы
     onFilePicked: async function(e) {
+      this.headers = [];
       this.table_conf = await TableHeaders.fetchHeadersSample();
       const files = e.target.files;
       this.excelFile = files[0];
