@@ -103,6 +103,75 @@
         </v-flex>
       </v-layout>
 
+      <v-layout mb-2>
+        <v-flex md12>
+          <v-toolbar color="primary" dark>
+            <v-toolbar-title>Категории цен</v-toolbar-title>
+            <v-divider class="mx-2" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+          </v-toolbar>
+          <form class="white elevation-4  pa-3">
+            <v-layout justify-space-between>
+              <v-flex>
+                <v-text-field
+                  type="text"
+                  v-model="priceCategory[0]"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('priceCategoryOne')"
+                  label="Категория 1"
+                  data-vv-name="priceCategoryOne"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  type="text"
+                  v-model="priceCategory[1]"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('priceCategoryTwo')"
+                  label="Категория 2"
+                  data-vv-name="priceCategoryTwo"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  type="text"
+                  v-model="priceCategory[2]"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('priceCategoryThree')"
+                  label="Категория 3"
+                  data-vv-name="priceCategoryThree"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  type="text"
+                  v-model="priceCategory[3]"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('priceCategoryFour')"
+                  label="Категория 4"
+                  data-vv-name="priceCategoryFour"
+                  required
+                ></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-text-field
+                  type="text"
+                  v-model="priceCategory[4]"
+                  v-validate="'required|decimal:2'"
+                  :error-messages="errors.collect('priceCategoryFive')"
+                  label="Категория 5"
+                  data-vv-name="priceCategoryFive"
+                  required
+                ></v-text-field>
+              </v-flex>
+            </v-layout>
+          </form>
+        </v-flex>
+      </v-layout>
+
       <my-table
         :config="table_conf"
         name-of-table="Таблица заказов!!!"
@@ -113,7 +182,8 @@
           currency,
           exchange,
           exchangeShipping,
-          pricePerKg
+          pricePerKg,
+          priceCategory
         }"
         @tableErrorStatus="val => (this.haveErrInTable = val)"
       ></my-table>
@@ -128,6 +198,7 @@ export default {
     validator: "new"
   },
   data: () => ({
+    priceCategory: [0, 0, 0, 0, 0],
     table_conf: {},
     haveErrInTable: false,
     // todo поля блока с параметрами закупки
@@ -154,6 +225,26 @@ export default {
           required: "Select field is required"
         },
         exchange: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        priceCategoryOne: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        priceCategoryTwo: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        priceCategoryThree: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        priceCategoryFour: {
+          required: "Select field is required",
+          decimal: "Поле должно содержать число"
+        },
+        priceCategoryFive: {
           required: "Select field is required",
           decimal: "Поле должно содержать число"
         },
@@ -204,6 +295,10 @@ export default {
     fileName: function() {
       this.nameOfSale = this.fileName.replace(/\.[a-z]{3,}$/, "") || "";
       this.yearOfSale = this.fileName.match(/[0-9]{4}/, "")[0] || "";
+    },
+
+    priceCategory: function() {
+      console.log(this.priceCategory);
     }
   },
   computed: {

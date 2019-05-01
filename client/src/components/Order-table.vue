@@ -358,6 +358,10 @@ export default {
     optionsOfSale: Object
   },
   data: () => ({
+    exchangeCourse: 1,
+    exchangeCourseShipping: 1,
+    priceWeight: 0,
+    priceCategoryInner: [],
     headersOfTable: {},
     depForChangeValueHeaders: [],
     headersFlag: {},
@@ -412,7 +416,7 @@ export default {
     this.headersOfTable = this.config.headersOfTable;
     this.checkHeaders();
     this.markNumberCol();
-    this.validateAllCells();
+    //todo this.validateAllCells();
     this.calculateCells();
     // this.calcAllTotal();
     // this.calcAllDelivery();
@@ -462,6 +466,11 @@ export default {
   watch: {
     optionsOfSale: {
       handler: function() {
+        this.exchangeCourse = +this.exchange || 1;
+        this.exchangeCourseShipping = +this.exchangeShipping || 1;
+        this.priceWeight = +this.pricePerKg || 0;
+        this.priceCategoryInner = this.priceCategory.map(e => +e || 0);
+
         this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
@@ -485,7 +494,7 @@ export default {
       handler: function() {
         console.log("headers_change");
         this.checkHeaders();
-        this.validateAllCells();
+        //todo this.validateAllCells();
         this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
@@ -501,6 +510,7 @@ export default {
         e["Итого"] !== undefined ? this.calcTotal(e) : "";
         e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
       });
+      this.validateAllCells();
     },
     // подсчет значения ИТОГО
     calcTotal: function(row) {
@@ -512,9 +522,17 @@ export default {
       ) {
         row["Итого"] = "Err";
       } else {
-        let total =
-          row["Цена"] * row["Количество"] * this.optionsOfSale.exchange;
-        console.log(this.optionsOfSale.exchange);
+        let priceCat =
+          row["Категория цен"] !== undefined &&
+          typeof +row["Категория цен"] === "number" &&
+          +this.optionsOfSale.priceCategory[row["Категория цен"] - 1] ===
+            +this.optionsOfSale.priceCategory[row["Категория цен"] - 1]
+            ? this.optionsOfSale.priceCategory[row["Категория цен"] - 1]
+            : 0;
+
+        let total = row["Цена"] * row["Количество"];
+        total =
+          (total + (total / 100) * priceCat) * this.optionsOfSale.exchange;
         row["Итого"] = this.gaussRound(total, 2);
       }
     },
@@ -595,7 +613,7 @@ export default {
       let header = this.headers.filter(e => e.value === this.colForFill)[0]
         .value;
       this.table.forEach(e => (e[header] = this.defaultFillCol));
-      this.validateAllCells();
+      //todo this.validateAllCells();
       this.calculateCells();
       // this.calcAllTotal();
       // this.calcAllDelivery();
@@ -618,7 +636,7 @@ export default {
       }
       console.log("saveCrud");
 
-      this.validateAllCells();
+      //todo this.validateAllCells();
       this.calculateCells();
       // this.calcAllTotal();
       // this.calcAllDelivery();
@@ -690,7 +708,7 @@ export default {
       confirm("Are you sure you want to delete this item?") &&
         this.table.splice(index, 1);
       this.markNumberCol();
-      this.validateAllCells();
+      //todo this.validateAllCells();
     },
     closeChangeHeader: function() {
       setTimeout(() => {
