@@ -2,10 +2,10 @@
   <v-flex>
     <!--todo блок с ошибками-->
     <v-layout v-if="haveError" elevation-4 class="white mb-2">
-      <v-flex md12 col>
+      <v-flex md12 col pa-0>
         <v-card>
           <v-toolbar color="red" dark>
-            <v-toolbar-side-icon></v-toolbar-side-icon>
+
 
             <v-toolbar-title>Ошибки:</v-toolbar-title>
 
@@ -29,10 +29,7 @@
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
               </v-list-tile>
-              <v-divider
-                v-if="item.list.length !== 0 && index + 1 < errorList.length"
-                :key="index"
-              ></v-divider>
+
             </template>
           </v-list>
         </v-card>
@@ -40,7 +37,7 @@
     </v-layout>
     <!--todo блок с таблицей-->
     <v-layout elevation-4 class="white">
-      <v-flex md12 col>
+      <v-flex md12 col pa-0>
         <v-toolbar color="primary" dark>
           <v-toolbar-title>{{ nameOfTable }}</v-toolbar-title>
           <v-divider class="mx-2" inset vertical></v-divider>
@@ -185,7 +182,7 @@
           </v-dialog>
         </v-toolbar>
 
-        <v-flex>
+
           <v-data-table
             :headers="headers"
             :items="table"
@@ -310,7 +307,9 @@
                     </span>
                     <span
                       v-if="
-                        header.value === 'Итого' &&
+                        (header.value === 'Итого' ||
+                          header.value === 'Доставка') &&
+                          props.item[header.value] !== '' &&
                           checkCurrencyTextNeed(
                             header.value,
                             props.item[header.value]
@@ -321,10 +320,12 @@
                     </span>
                     <span
                       v-else-if="
-                        checkCurrencyTextNeed(
-                          header.value,
-                          props.item[header.value]
-                        )
+                        header.value !== 'Итого' &&
+                          header.value !== 'Доставка' &&
+                          checkCurrencyTextNeed(
+                            header.value,
+                            props.item[header.value]
+                          )
                       "
                     >
                       {{ " " + optionsOfSale.currency }}
@@ -339,7 +340,7 @@
               <v-btn color="primary" @click="initialize">Reset</v-btn>
             </template>
           </v-data-table>
-        </v-flex>
+
       </v-flex>
     </v-layout>
   </v-flex>
@@ -466,12 +467,13 @@ export default {
   watch: {
     optionsOfSale: {
       handler: function() {
-        console.log('optionsOfSale_watch');
+        console.log("optionsOfSale_watch");
         this.exchangeCourse = +this.optionsOfSale.exchange || 1;
         this.exchangeCourseShipping = +this.optionsOfSale.exchangeShipping || 1;
         this.priceWeight = +this.optionsOfSale.pricePerKg || 0;
-        this.priceCategoryInner = this.optionsOfSale.priceCategory.map(e => +e || 0);
-console.log('+++'+ this.exchangeCourse);
+        this.priceCategoryInner = this.optionsOfSale.priceCategory.map(
+          e => +e || 0
+        );
         this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
@@ -526,27 +528,20 @@ console.log('+++'+ this.exchangeCourse);
         let priceCat =
           row["Категория цен"] !== undefined &&
           typeof +row["Категория цен"] === "number"
-          ? this.priceCategoryInner[row["Категория цен"] - 1]
+            ? this.priceCategoryInner[row["Категория цен"] - 1]
             : 0;
 
         let total = row["Цена"] * row["Количество"];
-        total =
-          (total + (total / 100) * priceCat) * this.exchangeCourse;
+        total = (total + (total / 100) * priceCat) * this.exchangeCourse;
         row["Итого"] = this.gaussRound(total, 2);
       }
     },
     calcDelivery: function(row) {
-      if (
-        row["Вес"] === undefined ||
-        typeof row["Вес"] !== "number"
-      ) {
+      if (row["Вес"] === undefined || typeof row["Вес"] !== "number") {
         row["Доставка"] = "";
       } else {
         //console.log('--'+row["Вес"]+'--'+this.optionsOfSale.pricePerKg+'--'+this.optionsOfSale.exchangeShipping);
-        let total =
-          row["Вес"] *
-          this.priceWeight *
-          this.exchangeCourseShipping;
+        let total = row["Вес"] * this.priceWeight * this.exchangeCourseShipping;
         row["Доставка"] = this.gaussRound(total, 2) || "";
       }
     },
@@ -795,7 +790,7 @@ console.log('+++'+ this.exchangeCourse);
     // todo проверка нужно ли выводить валюту
     checkCurrencyTextNeed: function(headerValue, value) {
       return (
-        ["Цена", "Итого"].includes(headerValue) &&
+        ["Цена", "Итого", "Доставка"].includes(headerValue) &&
         this.validCell(headerValue, value)
       );
     },

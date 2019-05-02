@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid pt-0>
+  <v-container fluid pt-0 grid-list-md>
     <v-layout elevation-4 mb-2>
       <v-flex md12 px-3 mb-0 class="white">
         <v-text-field
@@ -18,176 +18,209 @@
       </v-flex>
     </v-layout>
     <!--todo Блок открывающийся после загрузки файла-->
-    <v-flex v-if="headers.length">
+    <div v-if="headers.length" column>
       <!--todo блок с названием закупки годом валютой и т. д.-->
-      <v-layout mb-2>
-        <v-flex md12>
-          <form class="white elevation-4  pa-3">
-            <v-layout justify-space-between>
-              <v-flex>
-                <v-text-field
-                  v-model="nameOfSale"
-                  v-validate="{
-                    required: true,
-                    max: 20
-                  }"
-                  :counter="20"
-                  :error-messages="errors.collect('nameOfSale')"
-                  label="Название закупки"
-                  data-vv-name="nameOfSale"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  v-model="yearOfSale"
-                  v-validate="'required|numeric|max:4|min:4'"
-                  :counter="4"
-                  :error-messages="errors.collect('yearOfSale')"
-                  label="год закупки"
-                  data-vv-name="yearOfSale"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-select
-                  v-model="currency"
-                  v-validate="'required'"
-                  :items="currencyItems"
-                  menu-props="auto"
-                  :error-messages="errors.collect('currency')"
-                  label="Currency"
-                  data-vv-name="currency"
-                  required
-                ></v-select>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="exchange"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('exchange')"
-                  label="Exchange"
-                  data-vv-name="exchange"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="pricePerKg"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('pricePerKg')"
-                  label="Price per KG"
-                  data-vv-name="pricePerKg"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="exchangeShipping"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('exchangeShipping')"
-                  label="Exchange shipping"
-                  data-vv-name="exchangeShipping"
-                  required
-                ></v-text-field>
-              </v-flex>
-            </v-layout>
-            <v-btn @click="submit" color="success" :disabled="submitError"
-              >submit</v-btn
-            >
-            <v-btn @click="clear">clear</v-btn>
-          </form>
+      <v-layout
+        mb-2
+        class="white elevation-4  pa-3"
+        justify-space-between
+        column
+      >
+        <v-flex>
+          <v-layout>
+            <v-flex>
+              <v-text-field
+                v-model="nameOfSale"
+                v-validate="{
+                  required: true,
+                  max: 20
+                }"
+                :counter="20"
+                :error-messages="errors.collect('nameOfSale')"
+                label="Название закупки"
+                data-vv-name="nameOfSale"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                v-model="yearOfSale"
+                v-validate="'required|numeric|max:4|min:4'"
+                :counter="4"
+                :error-messages="errors.collect('yearOfSale')"
+                label="год закупки"
+                data-vv-name="yearOfSale"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-select
+                v-model="currency"
+                v-validate="'required'"
+                :items="currencyItems"
+                menu-props="auto"
+                :error-messages="errors.collect('currency')"
+                label="Currency"
+                data-vv-name="currency"
+                required
+              ></v-select>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="exchange"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('exchange')"
+                label="Exchange"
+                data-vv-name="exchange"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="pricePerKg"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('pricePerKg')"
+                label="Price per KG"
+                data-vv-name="pricePerKg"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="exchangeShipping"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('exchangeShipping')"
+                label="Exchange shipping"
+                data-vv-name="exchangeShipping"
+                required
+              ></v-text-field>
+            </v-flex>
+          </v-layout>
         </v-flex>
+        <v-btn @click="submit" color="success" :disabled="submitError"
+          >submit</v-btn
+        >
       </v-layout>
-
-      <v-layout mb-2>
-        <v-flex md12>
+      <v-layout row mb-2 justify-space-between>
+        <v-flex class="white elevation-4"  md6 pa-0 mr-2>
+          <v-toolbar color="primary" dark>
+            <v-toolbar-title>Доставка</v-toolbar-title>
+            <v-divider class="mx-2" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+          </v-toolbar>
+          <v-layout justify-space-between wrap px-2 py-1>
+            <v-flex md12>
+              <v-text-field
+                type="text"
+                v-model="pricePerKg"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('pricePerKg')"
+                label="Price per KG"
+                data-vv-name="pricePerKg"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex md12>
+              <v-text-field
+                type="text"
+                v-model="exchangeShipping"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('exchangeShipping')"
+                label="Exchange shipping"
+                data-vv-name="exchangeShipping"
+                required
+              ></v-text-field>
+            </v-flex>
+          </v-layout>
+        </v-flex>
+        <v-flex class="white elevation-4"  md6 pa-0 >
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Категории цен</v-toolbar-title>
             <v-divider class="mx-2" inset vertical></v-divider>
             <v-spacer></v-spacer>
           </v-toolbar>
-          <form class="white elevation-4  pa-3">
-            <v-layout justify-space-between>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="priceCategory[0]"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('priceCategoryOne')"
-                  label="Категория 1"
-                  data-vv-name="priceCategoryOne"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="priceCategory[1]"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('priceCategoryTwo')"
-                  label="Категория 2"
-                  data-vv-name="priceCategoryTwo"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="priceCategory[2]"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('priceCategoryThree')"
-                  label="Категория 3"
-                  data-vv-name="priceCategoryThree"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="priceCategory[3]"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('priceCategoryFour')"
-                  label="Категория 4"
-                  data-vv-name="priceCategoryFour"
-                  required
-                ></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-text-field
-                  type="text"
-                  v-model="priceCategory[4]"
-                  v-validate="'required|decimal:2'"
-                  :error-messages="errors.collect('priceCategoryFive')"
-                  label="Категория 5"
-                  data-vv-name="priceCategoryFive"
-                  required
-                ></v-text-field>
-              </v-flex>
-            </v-layout>
-          </form>
+
+          <v-layout justify-space-between wrap px-2 py-1>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="priceCategory[0]"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('priceCategoryOne')"
+                label="Категория 1"
+                data-vv-name="priceCategoryOne"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="priceCategory[1]"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('priceCategoryTwo')"
+                label="Категория 2"
+                data-vv-name="priceCategoryTwo"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="priceCategory[2]"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('priceCategoryThree')"
+                label="Категория 3"
+                data-vv-name="priceCategoryThree"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="priceCategory[3]"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('priceCategoryFour')"
+                label="Категория 4"
+                data-vv-name="priceCategoryFour"
+                required
+              ></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-text-field
+                type="text"
+                v-model="priceCategory[4]"
+                v-validate="'required|decimal:2'"
+                :error-messages="errors.collect('priceCategoryFive')"
+                label="Категория 5"
+                data-vv-name="priceCategoryFive"
+                required
+              ></v-text-field>
+            </v-flex>
+          </v-layout>
         </v-flex>
       </v-layout>
+      <v-layout>
 
-      <my-table
-        :config="table_conf"
-        name-of-table="Таблица заказов!!!"
-        :table="table"
-        :headers="headers"
-        :optionsOfSale="{
-          yearOfSale,
-          currency,
-          exchange,
-          exchangeShipping,
-          pricePerKg,
-          priceCategory
-        }"
-        @tableErrorStatus="val => (this.haveErrInTable = val)"
-      ></my-table>
-    </v-flex>
+        <my-table
+          :config="table_conf"
+          name-of-table="Таблица заказов!!!"
+          :table="table"
+          :headers="headers"
+          :optionsOfSale="{
+            yearOfSale,
+            currency,
+            exchange,
+            exchangeShipping,
+            pricePerKg,
+            priceCategory
+          }"
+          @tableErrorStatus="val => (this.haveErrInTable = val)"
+        ></my-table>
+      </v-layout>
+    </div>
   </v-container>
 </template>
 <script>
