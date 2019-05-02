@@ -436,6 +436,7 @@ export default {
             sortable: false
           })
         : "";
+
       for (let e in this.table[0]) {
         let text = e;
         if (this.headersForChange[e] !== undefined) {
@@ -449,6 +450,13 @@ export default {
           sortable: false
         });
       }
+      this.table[0]["К оплате"] === undefined
+        ? this.headers.push({
+          text: "К оплате",
+          value: "К оплате",
+          sortable: false
+        })
+        : "";
     },
     // изменение ключа в таблице
     changeKey: function(oldKey, newKey) {

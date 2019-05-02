@@ -5,8 +5,6 @@
       <v-flex md12 col pa-0>
         <v-card>
           <v-toolbar color="red" dark>
-
-
             <v-toolbar-title>Ошибки:</v-toolbar-title>
 
             <v-spacer></v-spacer>
@@ -29,7 +27,6 @@
                   </v-list-tile-sub-title>
                 </v-list-tile-content>
               </v-list-tile>
-
             </template>
           </v-list>
         </v-card>
@@ -182,165 +179,162 @@
           </v-dialog>
         </v-toolbar>
 
+        <v-data-table
+          :headers="headers"
+          :items="table"
+          class="elevation-4"
+          :rows-per-page-items="[
+            5,
+            10,
+            25,
+            {
+              text: '$vuetify.dataIterator.rowsPerPageAll',
+              value: -1
+            }
+          ]"
+        >
+          <template v-slot:headers="props">
+            <tr>
+              <th>
+                Actions
+              </th>
 
-          <v-data-table
-            :headers="headers"
-            :items="table"
-            class="elevation-4"
-            :rows-per-page-items="[
-              5,
-              10,
-              25,
-              {
-                text: '$vuetify.dataIterator.rowsPerPageAll',
-                value: -1
-              }
-            ]"
-          >
-            <template v-slot:headers="props">
-              <tr>
-                <th>
-                  Actions
-                </th>
-
-                <th
-                  v-for="(header, index) in props.headers"
-                  :key="header.value"
-                  v-bind:class="[
-                    text_color(headersFlag[header.value], classForCells)
-                  ]"
-                >
-                  <v-expand-transition>
-                    <div v-show="editActivator && index !== 0">
-                      <v-btn
-                        flat
-                        icon
-                        color="black"
-                        @click="changePositionOfCol(index, -1)"
-                      >
-                        <v-icon small>keyboard_arrow_left</v-icon>
-                      </v-btn>
-                      <v-btn flat icon color="black" @click="deleteCol(index)">
-                        <v-icon small>clear</v-icon>
-                      </v-btn>
-
-                      <v-btn
-                        flat
-                        icon
-                        color="black"
-                        @click="changePositionOfCol(index, 1)"
-                      >
-                        <v-icon small>keyboard_arrow_right</v-icon>
-                      </v-btn>
-                    </div>
-                  </v-expand-transition>
-                  <!--todo  РЕДАКТИРОВАНИЕ ЗАГОЛОВКОв-->
-                  <v-edit-dialog
-                    :return-value.sync="header.text"
-                    large
-                    lazy
-                    @close="change"
-                  >
-                    <div
-                      v-bind:class="[
-                        text_color(headersFlag[header.value], classForHeaders)
-                      ]"
-                    >
-                      {{ header.value }}
-                    </div>
-
-                    <template v-slot:input>
-                      <div class="mt-3 title">Change header</div>
-                      <v-select
-                        v-model="header.text"
-                        :items="headersNameNotUse"
-                        :label="header.text"
-                        single-line
-                        autofocus
-                      ></v-select>
-                    </template>
-                  </v-edit-dialog>
-                </th>
-              </tr>
-            </template>
-
-            <template v-slot:items="props">
-              <tr
-                class="tableRow"
-                :class="{ rowWithErrorStyle: checkErrRow(props.item['№']) }"
+              <th
+                v-for="(header, index) in props.headers"
+                :key="header.value"
+                v-bind:class="[
+                  text_color(headersFlag[header.value], classForCells)
+                ]"
               >
-                <td class="justify-center px-0">
-                  <v-icon small class="mr-2" @click="editItem(props.item)">
-                    edit
-                  </v-icon>
-                  <v-icon small @click="deleteItem(props.item)">
-                    delete
-                  </v-icon>
-                </td>
+                <v-expand-transition>
+                  <div v-show="editActivator && index !== 0">
+                    <v-btn
+                      flat
+                      icon
+                      color="black"
+                      @click="changePositionOfCol(index, -1)"
+                    >
+                      <v-icon small>keyboard_arrow_left</v-icon>
+                    </v-btn>
+                    <v-btn flat icon color="black" @click="deleteCol(index)">
+                      <v-icon small>clear</v-icon>
+                    </v-btn>
 
-                <td
-                  v-for="header in headers"
-                  v-bind:key="header.value"
-                  :nowrap="
-                    checkCurrencyTextNeed(
-                      header.value,
-                      props.item[header.value]
-                    )
-                  "
+                    <v-btn
+                      flat
+                      icon
+                      color="black"
+                      @click="changePositionOfCol(index, 1)"
+                    >
+                      <v-icon small>keyboard_arrow_right</v-icon>
+                    </v-btn>
+                  </div>
+                </v-expand-transition>
+                <!--todo  РЕДАКТИРОВАНИЕ ЗАГОЛОВКОв-->
+                <v-edit-dialog
+                  :return-value.sync="header.text"
+                  large
+                  lazy
+                  @close="change"
                 >
-                  <span>
-                    <!--style="white-space: nowrap"-->
-                    <span
-                      :class="[
-                        {
-                          textWithError: !validCell(
-                            header.value,
-                            props.item[header.value]
-                          )
-                        },
-                        {
-                          textNotImport: headersFlag[header.value]['notImport']
-                        }
-                      ]"
-                    >
-                      {{ props.item[header.value] }}
-                    </span>
-                    <span
-                      v-if="
-                        (header.value === 'Итого' ||
-                          header.value === 'Доставка') &&
-                          props.item[header.value] !== '' &&
-                          checkCurrencyTextNeed(
-                            header.value,
-                            props.item[header.value]
-                          )
-                      "
-                    >
-                      {{ " руб." }}
-                    </span>
-                    <span
-                      v-else-if="
-                        header.value !== 'Итого' &&
-                          header.value !== 'Доставка' &&
-                          checkCurrencyTextNeed(
-                            header.value,
-                            props.item[header.value]
-                          )
-                      "
-                    >
-                      {{ " " + optionsOfSale.currency }}
-                    </span>
-                  </span>
-                </td>
-              </tr>
-            </template>
-            <!--todo блок обработки пустой таблицы-->
-            <template v-slot:no-data>
-              <!--todo кнопка ресет ненужная пока-->
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
-          </v-data-table>
+                  <div
+                    v-bind:class="[
+                      text_color(headersFlag[header.value], classForHeaders)
+                    ]"
+                  >
+                    {{ header.value }}
+                  </div>
 
+                  <template v-slot:input>
+                    <div class="mt-3 title">Change header</div>
+                    <v-select
+                      v-model="header.text"
+                      :items="headersNameNotUse"
+                      :label="header.text"
+                      single-line
+                      autofocus
+                    ></v-select>
+                  </template>
+                </v-edit-dialog>
+              </th>
+            </tr>
+          </template>
+
+          <template v-slot:items="props">
+            <tr
+              class="tableRow"
+              :class="{ rowWithErrorStyle: checkErrRow(props.item['№']) }"
+            >
+              <td class="justify-center px-0">
+                <v-icon small class="mr-2" @click="editItem(props.item)">
+                  edit
+                </v-icon>
+                <v-icon small @click="deleteItem(props.item)">
+                  delete
+                </v-icon>
+              </td>
+
+              <td
+                v-for="header in headers"
+                v-bind:key="header.value"
+                :nowrap="
+                  checkCurrencyTextNeed(header.value, props.item[header.value])
+                "
+              >
+                <span>
+                  <!--style="white-space: nowrap"-->
+                  <span
+                    :class="[
+                      {
+                        textWithError: !validCell(
+                          header.value,
+                          props.item[header.value]
+                        )
+                      },
+                      {
+                        textNotImport: headersFlag[header.value]['notImport']
+                      }
+                    ]"
+                  >
+                    {{ props.item[header.value] }}
+                  </span>
+                  <span
+                    v-if="
+                      ['Итого', 'Доставка', 'К оплате'].includes(
+                        header.value
+                      ) &&
+                        props.item[header.value] !== '' &&
+                        checkCurrencyTextNeed(
+                          header.value,
+                          props.item[header.value]
+                        )
+                    "
+                  >
+                    {{ " руб." }}
+                  </span>
+                  <span
+                    v-else-if="
+                      !['Итого', 'Доставка', 'К оплате'].includes(
+                        header.value
+                      ) &&
+                        checkCurrencyTextNeed(
+                          header.value,
+                          props.item[header.value]
+                        )
+                    "
+                  >
+                    {{ " " + optionsOfSale.currency }}
+                  </span>
+                </span>
+              </td>
+            </tr>
+          </template>
+          <!--todo блок обработки пустой таблицы-->
+          <template v-slot:no-data>
+            <!--todo кнопка ресет ненужная пока-->
+            <v-btn color="primary" @click="initialize">Reset</v-btn>
+          </template>
+        </v-data-table>
       </v-flex>
     </v-layout>
   </v-flex>
@@ -512,11 +506,21 @@ export default {
       this.table.forEach(e => {
         e["Итого"] !== undefined ? this.calcTotal(e) : "";
         e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
+        e["Итого"] !== undefined ? this.calcToPay(e) : "";
       });
       this.validateAllCells();
     },
     // подсчет значения ИТОГО
+    calcToPay: function(row) {
+      let total = row["Итого"] || 0;
+      let delivery = row["Доставка"] || 0;
+      let result = this.gaussRound(total + delivery, 2);
+      row["К оплате"] === undefined
+        ? this.$set(row, "К оплате", result || "")
+        : (row["К оплате"] = result || "");
+    },
     calcTotal: function(row) {
+
       if (
         row["Цена"] === undefined ||
         typeof row["Цена"] !== "number" ||
@@ -533,7 +537,7 @@ export default {
 
         let total = row["Цена"] * row["Количество"];
         total = (total + (total / 100) * priceCat) * this.exchangeCourse;
-        row["Итого"] = this.gaussRound(total, 2);
+      row["Итого"] = this.gaussRound(total, 2);
       }
     },
     calcDelivery: function(row) {
@@ -790,7 +794,7 @@ export default {
     // todo проверка нужно ли выводить валюту
     checkCurrencyTextNeed: function(headerValue, value) {
       return (
-        ["Цена", "Итого", "Доставка"].includes(headerValue) &&
+        ["Цена", "Итого", "Доставка", "К оплате"].includes(headerValue) &&
         this.validCell(headerValue, value)
       );
     },
