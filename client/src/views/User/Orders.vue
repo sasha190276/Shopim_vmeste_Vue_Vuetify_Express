@@ -76,28 +76,6 @@
                 required
               ></v-text-field>
             </v-flex>
-            <v-flex>
-              <v-text-field
-                type="text"
-                v-model="pricePerKg"
-                v-validate="'required|decimal:2'"
-                :error-messages="errors.collect('pricePerKg')"
-                label="Price per KG"
-                data-vv-name="pricePerKg"
-                required
-              ></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field
-                type="text"
-                v-model="exchangeShipping"
-                v-validate="'required|decimal:2'"
-                :error-messages="errors.collect('exchangeShipping')"
-                label="Exchange shipping"
-                data-vv-name="exchangeShipping"
-                required
-              ></v-text-field>
-            </v-flex>
           </v-layout>
         </v-flex>
         <v-btn @click="submit" color="success" :disabled="submitError"
@@ -105,38 +83,62 @@
         >
       </v-layout>
       <v-layout row mb-2 justify-space-between>
-        <v-flex class="white elevation-4"  md6 pa-0 mr-2>
+        <v-flex class="white elevation-4" md6 pa-0 mr-2>
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Доставка</v-toolbar-title>
             <v-divider class="mx-2" inset vertical></v-divider>
             <v-spacer></v-spacer>
           </v-toolbar>
           <v-layout justify-space-between wrap px-2 py-1>
-            <v-flex md12>
+            <v-flex md6>
+              <v-select
+                v-model="unitForDelivery"
+                v-validate="'required'"
+                :items="unitForDeliveryItems"
+                menu-props="auto"
+                :error-messages="errors.collect('unitForDelivery')"
+                label="Unit Delivery"
+                data-vv-name="unitForDelivery"
+                required
+              ></v-select>
+            </v-flex>
+            <v-flex md6>
               <v-text-field
                 type="text"
-                v-model="pricePerKg"
+                v-model="pricePerUnit"
                 v-validate="'required|decimal:2'"
-                :error-messages="errors.collect('pricePerKg')"
-                label="Price per KG"
-                data-vv-name="pricePerKg"
+                :error-messages="errors.collect('pricePerUnit')"
+                label="Price per Unit"
+                data-vv-name="pricePerUnit"
                 required
               ></v-text-field>
             </v-flex>
-            <v-flex md12>
+            <v-flex md6>
+              <v-select
+                v-model="currencyOfDelivery"
+                v-validate="'required'"
+                :items="currencyOfDeliveryItems"
+                menu-props="auto"
+                :error-messages="errors.collect('currencyOfDelivery')"
+                label="Currency of Delivery"
+                data-vv-name="currencyOfDelivery"
+                required
+              ></v-select>
+            </v-flex>
+            <v-flex md6>
               <v-text-field
                 type="text"
-                v-model="exchangeShipping"
+                v-model="exchangeOfDelivery"
                 v-validate="'required|decimal:2'"
-                :error-messages="errors.collect('exchangeShipping')"
+                :error-messages="errors.collect('exchangeOfDelivery')"
                 label="Exchange shipping"
-                data-vv-name="exchangeShipping"
+                data-vv-name="exchangeOfDelivery"
                 required
               ></v-text-field>
             </v-flex>
           </v-layout>
         </v-flex>
-        <v-flex class="white elevation-4"  md6 pa-0 >
+        <v-flex class="white elevation-4" md6 pa-0>
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Категории цен</v-toolbar-title>
             <v-divider class="mx-2" inset vertical></v-divider>
@@ -203,7 +205,6 @@
         </v-flex>
       </v-layout>
       <v-layout>
-
         <my-table
           :config="table_conf"
           name-of-table="Таблица заказов!!!"
@@ -213,8 +214,9 @@
             yearOfSale,
             currency,
             exchange,
-            exchangeShipping,
-            pricePerKg,
+            exchangeOfDelivery,
+            unitForDelivery,
+            pricePerUnit,
             priceCategory
           }"
           @tableErrorStatus="val => (this.haveErrInTable = val)"
@@ -238,10 +240,14 @@ export default {
     nameOfSale: "",
     yearOfSale: "",
     currency: "$",
+    currencyOfDelivery: "$",
+    unitForDelivery: "кг",
     exchange: 1,
-    pricePerKg: 0,
-    exchangeShipping: 1,
+    pricePerUnit: 0,
+    exchangeOfDelivery: 1,
     currencyItems: ["$", "Eur", "Pound", "Rub"],
+    currencyOfDeliveryItems: ["$", "Eur", "Pound", "Rub"],
+    unitForDeliveryItems: ["кг", "шт"],
     // todo словарь для VeeValidate
     dictionary: {
       attributes: {
@@ -255,6 +261,12 @@ export default {
           // custom messages
         },
         currency: {
+          required: "Select field is required"
+        },
+        currencyOfDelivery: {
+          required: "Select field is required"
+        },
+        unitForDelivery: {
           required: "Select field is required"
         },
         exchange: {
@@ -281,11 +293,11 @@ export default {
           required: "Select field is required",
           decimal: "Поле должно содержать число"
         },
-        pricePerKg: {
+        pricePerUnit: {
           required: "Select field is required",
           decimal: "Поле должно содержать число"
         },
-        exchangeShipping: {
+        exchangeOfDelivery: {
           required: "Select field is required",
           decimal: "Поле должно содержать число"
         },
@@ -307,7 +319,7 @@ export default {
     headers: [],
 
     // todo заголовки таблицы касающиеся доставки
-    shippingOption: ["Вес", "Курс Доставки", "Цена за килограмм"],
+    //shippingOption: ["Вес", "Курс Доставки", "Цена за килограмм"],
 
     // todo автозамена имен заголовков при импорте
     headersForChange: {
@@ -347,15 +359,20 @@ export default {
       let result = [];
       let orderOptions = {
         currency: this.currency,
-        exchange: this.exchange
+        exchange: this.exchange,
+        priceCategory: this.priceCategory.map(e => +e),
+        unitForDelivery: this.unitForDelivery,
+        pricePerUnit: this.pricePerUnit,
+        currencyOfDelivery: this.currencyOfDelivery,
+        exchangeOfDelivery: this.exchangeOfDelivery
       };
-      console.log(this.table);
+      //console.log(this.table);
       this.table.forEach(row => {
-        console.log("submit");
+        //console.log("submit");
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
         rowResult.yearOfSale = this.yearOfSale;
-        console.log(row);
+        //console.log(row);
         for (let key in row) {
           if (key === "None" || key === "№") continue;
           if (
@@ -366,18 +383,21 @@ export default {
               ? (row[key] = +row[key].replace(/,/, "."))
               : "";
           }
-          if (this.shippingOption.includes(key)) {
-            rowResult.shipping === undefined ? (rowResult.shipping = {}) : "";
-            rowResult.shipping[key] = row[key];
-          } else {
-            rowResult[key] = row[key];
-          }
+          rowResult[key] = row[key];
+          // if (this.shippingOption.includes(key)) {
+          //   rowResult.shipping === undefined ? (rowResult.shipping = {}) : "";
+          //   rowResult.shipping[key] = row[key];
+          // } else {
+          //   rowResult[key] = row[key];
+          // }
         }
-        rowResult.shipping["Курс доставки"] = this.exchangeShipping;
-        rowResult.orderOptions = orderOptions;
+        //rowResult.shipping["Курс доставки"] = this.exchangeShipping;
+        //rowResult.orderOptions = orderOptions;
         result.push(rowResult);
-        console.log(result);
+        //console.log(result);
       });
+      console.log(result);
+      console.log(orderOptions);
     },
 
     // очистка формы
@@ -452,10 +472,10 @@ export default {
       }
       this.table[0]["К оплате"] === undefined
         ? this.headers.push({
-          text: "К оплате",
-          value: "К оплате",
-          sortable: false
-        })
+            text: "К оплате",
+            value: "К оплате",
+            sortable: false
+          })
         : "";
     },
     // изменение ключа в таблице

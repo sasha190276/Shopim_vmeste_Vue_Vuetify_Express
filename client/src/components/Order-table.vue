@@ -354,8 +354,8 @@ export default {
   },
   data: () => ({
     exchangeCourse: 1,
-    exchangeCourseShipping: 1,
-    priceWeight: 0,
+    exchangeOfDelivery: 1,
+    pricePerUnit: 0,
     priceCategoryInner: [],
     headersOfTable: {},
     depForChangeValueHeaders: [],
@@ -463,8 +463,8 @@ export default {
       handler: function() {
         console.log("optionsOfSale_watch");
         this.exchangeCourse = +this.optionsOfSale.exchange || 1;
-        this.exchangeCourseShipping = +this.optionsOfSale.exchangeShipping || 1;
-        this.priceWeight = +this.optionsOfSale.pricePerKg || 0;
+        this.exchangeOfDelivery = +this.optionsOfSale.exchangeOfDelivery || 1;
+        this.pricePerUnit = +this.optionsOfSale.pricePerUnit || 0;
         this.priceCategoryInner = this.optionsOfSale.priceCategory.map(
           e => +e || 0
         );
@@ -545,7 +545,7 @@ export default {
         row["Доставка"] = "";
       } else {
         //console.log('--'+row["Вес"]+'--'+this.optionsOfSale.pricePerKg+'--'+this.optionsOfSale.exchangeShipping);
-        let total = row["Вес"] * this.priceWeight * this.exchangeCourseShipping;
+        let total = row["Вес"] * this.pricePerUnit * this.exchangeOfDelivery;
         row["Доставка"] = this.gaussRound(total, 2) || "";
       }
     },
