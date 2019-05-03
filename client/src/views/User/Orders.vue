@@ -78,6 +78,17 @@
             </v-flex>
           </v-layout>
         </v-flex>
+        <v-flex v-show="isSameName">
+          <v-checkbox v-model="checkbox">
+            <template v-slot:label red>
+              <div>
+                <span class="red--text"
+                  >Такая закупка уже существует Перезаписать???</span
+                >
+              </div>
+            </template>
+          </v-checkbox>
+        </v-flex>
         <v-btn @click="submit" color="success" :disabled="submitError"
           >submit</v-btn
         >
@@ -228,11 +239,14 @@
 <script>
 import XLSX from "xlsx";
 import TableHeaders from "../../services/TableHeaders";
+import Purchases from "../../services/Purchases";
 export default {
   $_veeValidate: {
     validator: "new"
   },
   data: () => ({
+    isSameName: false,
+    checkbox: false,
     priceCategory: [0, 0, 0, 0, 0],
     table_conf: {},
     haveErrInTable: false,
@@ -337,6 +351,11 @@ export default {
 
   updated() {},
   watch: {
+    nameOfSale: async function() {
+      let res = await Purchases.fetchPurchases(this.nameOfSale);
+      console.log(res);
+      this.isSameName = !!res.length;
+    },
     fileName: function() {
       this.nameOfSale = this.fileName.replace(/\.[a-z]{3,}$/, "") || "";
       this.yearOfSale = this.fileName.match(/[0-9]{4}/, "")[0] || "";
@@ -348,31 +367,35 @@ export default {
   },
   computed: {
     submitError: function() {
-      return this.haveErrInTable || !!this.errors.items.length;
+      let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
+      return this.haveErrInTable || !!this.errors.items.length || sameName;
     }
   },
   methods: {
     // getHeadersSample: async function() {
     //   this.table_conf = await TableHeader.fetchHeadersSample();
     // },
-    submit: function() {
+    submit: async function() {
       let result = [];
       let orderOptions = {
+        name: this.nameOfSale,
+        year: this.yearOfSale,
         currency: this.currency,
         exchange: this.exchange,
         priceCategory: this.priceCategory.map(e => +e),
         unitForDelivery: this.unitForDelivery,
         pricePerUnit: this.pricePerUnit,
         currencyOfDelivery: this.currencyOfDelivery,
-        exchangeOfDelivery: this.exchangeOfDelivery
+        exchangeOfDelivery: this.exchangeOfDelivery,
+        headers: this.headers.reduce((res, current) => {
+          current.value !== "№" ? res.push(current.value) : "";
+          return res;
+        }, [])
       };
-      //console.log(this.table);
       this.table.forEach(row => {
-        //console.log("submit");
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
         rowResult.yearOfSale = this.yearOfSale;
-        //console.log(row);
         for (let key in row) {
           if (key === "None" || key === "№") continue;
           if (
@@ -384,20 +407,16 @@ export default {
               : "";
           }
           rowResult[key] = row[key];
-          // if (this.shippingOption.includes(key)) {
-          //   rowResult.shipping === undefined ? (rowResult.shipping = {}) : "";
-          //   rowResult.shipping[key] = row[key];
-          // } else {
-          //   rowResult[key] = row[key];
-          // }
         }
-        //rowResult.shipping["Курс доставки"] = this.exchangeShipping;
-        //rowResult.orderOptions = orderOptions;
         result.push(rowResult);
-        //console.log(result);
       });
       console.log(result);
       console.log(orderOptions);
+      await Purchases.fetchPurchaseAndOrdersImport({
+        name: this.nameOfSale,
+        purchase: orderOptions,
+        orders: result
+      });
     },
 
     // очистка формы
@@ -413,6 +432,7 @@ export default {
     // загрузка и обработка EXCEL таблицы
     onFilePicked: async function(e) {
       this.headers = [];
+      this.checkbox = false;
       this.table_conf = await TableHeaders.fetchHeadersSample();
       const files = e.target.files;
       this.excelFile = files[0];

@@ -13,6 +13,7 @@ app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(require('./routes/headers_sample'));
+app.use(require('./routes/import_purchase'));
 
 app.get('/posts', (req, res) => {
   console.log('----------------------');
