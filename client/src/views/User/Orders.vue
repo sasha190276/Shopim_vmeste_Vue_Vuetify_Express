@@ -412,11 +412,12 @@ export default {
       });
       console.log(result);
       console.log(orderOptions);
-      await Purchases.fetchPurchaseAndOrdersImport({
+      let resolveOfDb = await Purchases.fetchPurchaseAndOrdersImport({
         name: this.nameOfSale,
         purchase: orderOptions,
         orders: result
       });
+      console.log('=====' + resolveOfDb);
     },
 
     // очистка формы

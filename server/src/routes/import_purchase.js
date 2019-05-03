@@ -12,14 +12,18 @@ router.put('/import_purchase', async (req, res) => {
   const collectionPurchase = await db.getDb().collection('purchases');
   const collectionOrders = await db.getDb().collection('orders');
   const purchases = await collectionPurchase.find({ name: req.body.name }).toArray();
-  if (purchases.length) {
-    await collectionPurchase.deleteOne({ name: req.body.name });
-    await collectionOrders.deleteMany({ nameOfSale: req.body.name });
+  try {
+    if (purchases.length) {
+      await collectionPurchase.deleteOne({ name: req.body.name });
+      await collectionOrders.deleteMany({ nameOfSale: req.body.name });
+    }
+    await collectionPurchase.insertOne(req.body.purchase);
+    await collectionOrders.insertMany(req.body.orders);
+  } catch (e) {
+    console.log(e);
+    res.send('error');
   }
-  await collectionPurchase.insertOne(req.body.purchase);
-  await collectionOrders.insertMany(req.body.orders);
-
-  res.send();
+  res.send('OK');
 });
 
 module.exports = router;
