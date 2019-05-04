@@ -260,8 +260,16 @@ export default {
     exchange: 1,
     pricePerUnit: 0,
     exchangeOfDelivery: 1,
-    currencyItems: ["$", "Eur", "Pound", "Rub"],
-    currencyOfDeliveryItems: ["$", "Eur", "Pound", "Rub"],
+    currencyItems: ["$", "Eur", "Pound", "Rub", "Y", "Kr"],
+    currencyOfDeliveryItems: ["$", "Eur", "Pound", "Rub", "Y", "Kr"],
+    currencyFromImportTable: {
+      "Доллар США": "$",
+      Евро: "Eur",
+      Йенна: "Y",
+      "Английский фунт": "Pound",
+      "Датская крона": "Kr",
+      Рубль: "Rub"
+    },
     unitForDeliveryItems: ["кг", "шт"],
     // todo словарь для VeeValidate
     dictionary: {
@@ -465,7 +473,38 @@ export default {
           if (!rABS) data = new Uint8Array(data);
           let workbook = XLSX.read(data, { type: rABS ? "binary" : "array" });
           let sheet_name = workbook.SheetNames[0];
+
+          let sheet_name_2 = workbook.SheetNames[1];
+          let sheet_name_3 = workbook.SheetNames[2];
+
           let worksheet = workbook.Sheets[sheet_name];
+
+          let worksheet_2 = workbook.Sheets[sheet_name_2];
+          let worksheet_3 = workbook.Sheets[sheet_name_3];
+
+          let tableWithOptions = XLSX.utils
+            .sheet_to_json(worksheet_2, { defval: "", header: 1 })
+            .slice(0, 6);
+
+          this.exchange = tableWithOptions[4][2];
+          this.exchangeOfDelivery = tableWithOptions[3][2];
+          this.priceCategory = tableWithOptions.slice(1).map(e => e[5]);
+          this.currency = this.currencyFromImportTable[tableWithOptions[1][2]];
+          this.currencyOfDelivery = this.currencyFromImportTable[
+            tableWithOptions[1][2]
+          ];
+
+          let table_3 = XLSX.utils.sheet_to_json(worksheet_3, {
+            defval: "",
+            header: 1
+          });
+
+          console.log("===================");
+          console.log(tableWithOptions);
+          console.log("==================");
+          console.log("===================");
+          console.log(table_3);
+          console.log("==================");
           this.table = XLSX.utils
             .sheet_to_json(worksheet, { defval: "" })
             .filter(e => {
