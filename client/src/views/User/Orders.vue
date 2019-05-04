@@ -240,6 +240,7 @@
 import XLSX from "xlsx";
 import TableHeaders from "../../services/TableHeaders";
 import Purchases from "../../services/Purchases";
+import Users from "../../services/Users";
 export default {
   $_veeValidate: {
     validator: "new"
@@ -353,17 +354,16 @@ export default {
   watch: {
     nameOfSale: async function() {
       let res = await Purchases.fetchPurchases(this.nameOfSale);
-      console.log(res);
       this.isSameName = !!res.length;
     },
     fileName: function() {
       this.nameOfSale = this.fileName.replace(/\.[a-z]{3,}$/, "") || "";
       this.yearOfSale = this.fileName.match(/[0-9]{4}/, "")[0] || "";
-    },
-
-    priceCategory: function() {
-      console.log(this.priceCategory);
     }
+
+    // priceCategory: function() {
+    //   console.log(this.priceCategory);
+    // }
   },
   computed: {
     submitError: function() {
@@ -377,6 +377,7 @@ export default {
     // },
     submit: async function() {
       let result = [];
+      let nicksUniq = new Set();
       let orderOptions = {
         name: this.nameOfSale,
         year: this.yearOfSale,
@@ -393,6 +394,7 @@ export default {
         }, [])
       };
       this.table.forEach(row => {
+        row["Ник"] ? nicksUniq.add(row["Ник"]) : "";
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
         rowResult.yearOfSale = this.yearOfSale;
@@ -410,14 +412,26 @@ export default {
         }
         result.push(rowResult);
       });
-      console.log(result);
-      console.log(orderOptions);
+      // console.log(result);
+      // console.log(orderOptions);
+      let userImportResult = "";
+      let usersFromDb = await Users.fetchUsersGet();
+      if (usersFromDb) {
+        let nicksFromDb = usersFromDb.map(e => e.nick);
+        let nicks = [...nicksUniq]
+          .filter(e => !nicksFromDb.includes(e))
+          .map(function(e) {
+            return { nick: e };
+          });
+        userImportResult = await Users.fetchUsersImport(nicks);
+      }
+
       let resolveOfDb = await Purchases.fetchPurchaseAndOrdersImport({
         name: this.nameOfSale,
         purchase: orderOptions,
         orders: result
       });
-      console.log('=====' + resolveOfDb);
+      console.log(userImportResult + "=====" + resolveOfDb);
     },
 
     // очистка формы

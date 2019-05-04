@@ -15,10 +15,8 @@ router.get('/headers_sample', async (req, res) => {
       name, depForSetDefault,
     } = { ...header };
     tableConfig.headersOfTable[name] = { ...header };
-    console.log(tableConfig);
     if (depForSetDefault) tableConfig.depForChangeValueHeaders.push(name);
   });
-  console.log(tableConfig);
   res.send(tableConfig);
 });
 router.put('/headers_sample', async (req, res) => {
@@ -45,8 +43,6 @@ router.get('/setHeaders', async (req, res) => {
   const a = await collection.findOne({ name: 'New' });
   const b = await collection.findOne({ name: 'New_2' });
   // const a = EJSON.deserialize(aaa.calculate);
-  console.log(a.calculate);
-  console.log(b.calculate);
 
   // const b = a.code();
   // console.log(b);

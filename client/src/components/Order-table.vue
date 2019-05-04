@@ -418,8 +418,6 @@ export default {
   },
   mounted() {
     this.editedItem = this.headersForEditAndCreateItems();
-
-    console.log(this.optionsOfSale);
   },
   computed: {
     haveError: function() {
@@ -483,7 +481,6 @@ export default {
     table: {
       handler: function() {
         console.log("table_change");
-        //this.validateAllCells();
       },
       deep: true
     },
@@ -544,7 +541,6 @@ export default {
       if (row["Вес"] === undefined || typeof row["Вес"] !== "number") {
         row["Доставка"] = "";
       } else {
-        //console.log('--'+row["Вес"]+'--'+this.optionsOfSale.pricePerKg+'--'+this.optionsOfSale.exchangeShipping);
         let total = row["Вес"] * this.pricePerUnit * this.exchangeOfDelivery;
         row["Доставка"] = this.gaussRound(total, 2) || "";
       }

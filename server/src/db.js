@@ -23,9 +23,9 @@ module.exports = {
   getDb() {
     return state.db;
   },
-  async test() {
-    console.log('TEST');
-    const result = await state.db.collection('headers_of_orders_table').find({}).toArray();
-    return result;
-  },
+  // async test() {
+  //   console.log('TEST');
+  //   const result = await state.db.collection('headers_of_orders_table').find({}).toArray();
+  //   return result;
+  // },
 };

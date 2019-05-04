@@ -14,10 +14,10 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(require('./routes/headers_sample'));
 app.use(require('./routes/import_purchase'));
+app.use(require('./routes/users'));
+
 
 app.get('/posts', (req, res) => {
-  console.log('----------------------');
-  console.log(db.getDb());
   res.send(
     [{
       title: 'Hello World!',
