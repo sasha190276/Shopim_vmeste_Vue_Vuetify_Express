@@ -340,6 +340,8 @@ export default {
 
     table: [],
     headers: [],
+    tableWithPay: [],
+    headersOfTableWithPay: [],
 
     // todo заголовки таблицы касающиеся доставки
     //shippingOption: ["Вес", "Курс Доставки", "Цена за килограмм"],
@@ -353,7 +355,26 @@ export default {
       "Кол-во вещей ": "Количество"
     }
   }),
+  beforeMount() {
+    Date.prototype.format = function(format = 'dd-mm-yyyy') {
+      const replaces = {
+        yyyy: this.getFullYear(),
+        mm: ('0'+(this.getMonth() + 1)).slice(-2),
+        dd: ('0'+this.getDate()).slice(-2),
+        hh: ('0'+this.getHours()).slice(-2),
+        MM: ('0'+this.getMinutes()).slice(-2),
+        ss: ('0'+this.getSeconds()).slice(-2)
+      };
+      let result = format;
+      for(const replace in replaces){
+        result = result.replace(replace,replaces[replace]);
+      }
+      return result;
+    };
 
+
+
+  },
   mounted() {
     this.$validator.localize("en", this.dictionary);
   },
@@ -471,7 +492,7 @@ export default {
         reader.addEventListener("load", () => {
           let data = reader.result;
           if (!rABS) data = new Uint8Array(data);
-          let workbook = XLSX.read(data, { type: rABS ? "binary" : "array" });
+          let workbook = XLSX.read(data, { type: rABS ? "binary" : "array" , cellDates: true });
           let sheet_name = workbook.SheetNames[0];
 
           let sheet_name_2 = workbook.SheetNames[1];
@@ -483,7 +504,7 @@ export default {
           let worksheet_3 = workbook.Sheets[sheet_name_3];
 
           let tableWithOptions = XLSX.utils
-            .sheet_to_json(worksheet_2, { defval: "", header: 1 })
+            .sheet_to_json(worksheet_2, { defval: "", header: 1})
             .slice(0, 6);
 
           this.exchange = tableWithOptions[4][2];
@@ -494,17 +515,30 @@ export default {
             tableWithOptions[1][2]
           ];
 
-          let table_3 = XLSX.utils.sheet_to_json(worksheet_3, {
-            defval: "",
-            header: 1
+          let tableWithPay = XLSX.utils.sheet_to_json(worksheet_3, {
+            defval: ""
           });
 
+
+          this.tableWithPay = tableWithPay.map(function(e) {
+            return {
+              Ник: e["Ник"],
+              "Сумма платежа": e["Сумма платежа"],
+              "Дата учета": e["Дата учета"] ,//new Date( +e["Дата учета"] * 24 * 60 * 60),
+              Примечание: e["Примечание"]
+            };
+          });
+          let date = this.tableWithPay[0]["Дата учета"];
+          let year = date.getFullYear();
+          let month = date.getMonth();
+          let day = date.getDay();
+          let ddd= date.format();
+
           console.log("===================");
-          console.log(tableWithOptions);
-          console.log("==================");
-          console.log("===================");
-          console.log(table_3);
-          console.log("==================");
+          console.log(this.tableWithPay);
+          console.log(ddd);
+          console.log("======="+this.tableWithPay[0]["Дата учета"] +"========");
+
           this.table = XLSX.utils
             .sheet_to_json(worksheet, { defval: "" })
             .filter(e => {
