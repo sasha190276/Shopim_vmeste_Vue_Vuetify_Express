@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid pt-0 grid-list-md>
+  <v-container fluid pt-0>
     <v-layout elevation-4 mb-2>
       <v-flex md12 px-3 mb-0 class="white">
         <v-text-field
@@ -215,23 +215,67 @@
           </v-layout>
         </v-flex>
       </v-layout>
+
       <v-layout>
-        <my-table
-          :config="table_conf"
-          name-of-table="Таблица заказов!!!"
-          :table="table"
-          :headers="headers"
-          :optionsOfSale="{
-            yearOfSale,
-            currency,
-            exchange,
-            exchangeOfDelivery,
-            unitForDelivery,
-            pricePerUnit,
-            priceCategory
-          }"
-          @tableErrorStatus="val => (this.haveErrInTable = val)"
-        ></my-table>
+        <v-flex elevation-4>
+          <v-tabs grow centered color="cyan" dark icons-and-text>
+            <v-tabs-slider color="yellow"></v-tabs-slider>
+
+            <v-tab href="#tab-1">
+              Таблица заказов
+              <v-icon>phone</v-icon>
+            </v-tab>
+
+            <v-tab href="#tab-2">
+              Таблица оплат
+              <v-icon>favorite</v-icon>
+            </v-tab>
+
+
+            <v-tab-item :key="2" :value="'tab-1'">
+              <v-layout>
+                <my-table
+                  :config="table_conf"
+                  name-of-table="Таблица заказов!!!"
+                  :table="table"
+                  :headers="headers"
+                  :optionsOfSale="{
+                    yearOfSale,
+                    currency,
+                    exchange,
+                    exchangeOfDelivery,
+                    unitForDelivery,
+                    pricePerUnit,
+                    priceCategory,
+                    calculate: true
+                  }"
+                  @tableErrorStatus="val => (this.haveErrInTable = val)"
+                ></my-table>
+              </v-layout>
+            </v-tab-item>
+            <v-tab-item :key="1" :value="'tab-2'">
+              <v-layout>
+                <my-table
+                        :config="table_conf_tableWithPay"
+                        name-of-table="Таблица заказов!!!"
+                        :table="tableWithPay"
+                        :headers="headersOfTableWithPay"
+                        :optionsOfSale="{
+                    yearOfSale,
+                    currency,
+                    exchange,
+                    exchangeOfDelivery,
+                    unitForDelivery,
+                    pricePerUnit,
+                    priceCategory,
+                    calculate: false
+                  }"
+                        @tableErrorStatus="val => (this.haveErrInTable = val)"
+                ></my-table>
+              </v-layout>
+            </v-tab-item>
+          </v-tabs>
+        </v-flex>
       </v-layout>
     </div>
   </v-container>
@@ -250,6 +294,7 @@ export default {
     checkbox: false,
     priceCategory: [0, 0, 0, 0, 0],
     table_conf: {},
+    table_conf_tableWithPay: {},
     haveErrInTable: false,
     // todo поля блока с параметрами закупки
     nameOfSale: "",
@@ -356,24 +401,21 @@ export default {
     }
   }),
   beforeMount() {
-    Date.prototype.format = function(format = 'dd-mm-yyyy') {
+    Date.prototype.format = function(format = "dd-mm-yyyy") {
       const replaces = {
         yyyy: this.getFullYear(),
-        mm: ('0'+(this.getMonth() + 1)).slice(-2),
-        dd: ('0'+this.getDate()).slice(-2),
-        hh: ('0'+this.getHours()).slice(-2),
-        MM: ('0'+this.getMinutes()).slice(-2),
-        ss: ('0'+this.getSeconds()).slice(-2)
+        mm: ("0" + (this.getMonth() + 1)).slice(-2),
+        dd: ("0" + this.getDate()).slice(-2),
+        hh: ("0" + this.getHours()).slice(-2),
+        MM: ("0" + this.getMinutes()).slice(-2),
+        ss: ("0" + this.getSeconds()).slice(-2)
       };
       let result = format;
-      for(const replace in replaces){
-        result = result.replace(replace,replaces[replace]);
+      for (const replace in replaces) {
+        result = result.replace(replace, replaces[replace]);
       }
       return result;
     };
-
-
-
   },
   mounted() {
     this.$validator.localize("en", this.dictionary);
@@ -478,6 +520,7 @@ export default {
       this.headers = [];
       this.checkbox = false;
       this.table_conf = await TableHeaders.fetchHeadersSample();
+      this.table_conf_tableWithPay = await TableHeaders.fetchHeadersSampleTableWithPay();
       const files = e.target.files;
       this.excelFile = files[0];
       if (files[0] !== undefined) {
@@ -492,7 +535,10 @@ export default {
         reader.addEventListener("load", () => {
           let data = reader.result;
           if (!rABS) data = new Uint8Array(data);
-          let workbook = XLSX.read(data, { type: rABS ? "binary" : "array" , cellDates: true });
+          let workbook = XLSX.read(data, {
+            type: rABS ? "binary" : "array",
+            cellDates: true
+          });
           let sheet_name = workbook.SheetNames[0];
 
           let sheet_name_2 = workbook.SheetNames[1];
@@ -504,7 +550,7 @@ export default {
           let worksheet_3 = workbook.Sheets[sheet_name_3];
 
           let tableWithOptions = XLSX.utils
-            .sheet_to_json(worksheet_2, { defval: "", header: 1})
+            .sheet_to_json(worksheet_2, { defval: "", header: 1 })
             .slice(0, 6);
 
           this.exchange = tableWithOptions[4][2];
@@ -519,25 +565,14 @@ export default {
             defval: ""
           });
 
-
           this.tableWithPay = tableWithPay.map(function(e) {
             return {
               Ник: e["Ник"],
               "Сумма платежа": e["Сумма платежа"],
-              "Дата учета": e["Дата учета"] ,//new Date( +e["Дата учета"] * 24 * 60 * 60),
+              "Дата учета": new Date(Date.parse(e["Дата учета"]) + 17 * 1000),
               Примечание: e["Примечание"]
             };
           });
-          let date = this.tableWithPay[0]["Дата учета"];
-          let year = date.getFullYear();
-          let month = date.getMonth();
-          let day = date.getDay();
-          let ddd= date.format();
-
-          console.log("===================");
-          console.log(this.tableWithPay);
-          console.log(ddd);
-          console.log("======="+this.tableWithPay[0]["Дата учета"] +"========");
 
           this.table = XLSX.utils
             .sheet_to_json(worksheet, { defval: "" })
@@ -546,7 +581,8 @@ export default {
                 return e["Ник"] !== "";
               }
             });
-          this.setHeaders();
+          this.headers = this.setHeaders(this.table, true);
+          this.headersOfTableWithPay = this.setHeaders(this.tableWithPay);
         });
       } else {
         this.fileName = "";
@@ -555,7 +591,7 @@ export default {
     },
 
     // создание массива заголовков
-    setHeaders: function() {
+   /* setHeaders: function() {
       this.headers = [];
       this.table[0]["№"] === undefined
         ? this.headers.push({
@@ -585,6 +621,41 @@ export default {
             sortable: false
           })
         : "";
+    },*/
+    // создание массива заголовков
+    setHeaders: function(table, forPay = false) {
+      let headers = [];
+      table[0]["№"] === undefined
+        ? headers.push({
+            text: "№",
+            value: "№",
+            sortable: false
+          })
+        : "";
+
+      for (let e in table[0]) {
+        let text = e;
+        if (this.headersForChange[e] !== undefined) {
+          text = this.headersForChange[e];
+          this.changeKey(e, text);
+          e = text;
+        }
+        headers.push({
+          text: text,
+          value: e,
+          sortable: false
+        });
+      }
+      if (forPay) {
+        table[0]["К оплате"] === undefined
+          ? headers.push({
+              text: "К оплате",
+              value: "К оплате",
+              sortable: false
+            })
+          : "";
+      }
+      return headers
     },
     // изменение ключа в таблице
     changeKey: function(oldKey, newKey) {

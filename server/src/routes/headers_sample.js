@@ -19,6 +19,20 @@ router.get('/headers_sample', async (req, res) => {
   });
   res.send(tableConfig);
 });
+router.get('/headers_sample_tableWithPay', async (req, res) => {
+  const tableConfig = {};
+  tableConfig.headersOfTable = {};
+  tableConfig.depForChangeValueHeaders = [];
+  const headers = await db.getDb().collection('header_sample_tableWithPay').find({}, { fields: { _id: 0 } }).toArray();
+  headers.forEach((header) => {
+    const {
+      name, depForSetDefault,
+    } = { ...header };
+    tableConfig.headersOfTable[name] = { ...header };
+    if (depForSetDefault) tableConfig.depForChangeValueHeaders.push(name);
+  });
+  res.send(tableConfig);
+});
 router.put('/headers_sample', async (req, res) => {
   const collection = await db.getDb().collection('headers_sample');
   if (await collection.findOne({ name: req.body.name })) return;

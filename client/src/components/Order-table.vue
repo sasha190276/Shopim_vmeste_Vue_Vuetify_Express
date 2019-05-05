@@ -1,7 +1,7 @@
 <template>
   <v-flex>
     <!--todo блок с ошибками-->
-    <v-layout v-if="haveError" elevation-4 class="white mb-2">
+    <v-layout v-if="haveError"  class="white mb-2">
       <v-flex md12 col pa-0>
         <v-card>
           <v-toolbar color="red" dark>
@@ -33,12 +33,12 @@
       </v-flex>
     </v-layout>
     <!--todo блок с таблицей-->
-    <v-layout elevation-4 class="white">
+    <v-layout  class="white">
       <v-flex md12 col pa-0>
-        <v-toolbar color="primary" dark>
-          <v-toolbar-title>{{ nameOfTable }}</v-toolbar-title>
-          <v-divider class="mx-2" inset vertical></v-divider>
-          <v-spacer></v-spacer>
+        <v-toolbar color="primary" dark >
+          <!--<v-toolbar-title>{{ nameOfTable }}</v-toolbar-title>-->
+         <!-- <v-divider class="mx-2" inset vertical></v-divider>-->
+
           <v-btn
             color="success"
             dark
@@ -138,6 +138,7 @@
             </v-card>
           </v-dialog>
           <v-divider class="mx-2" inset vertical></v-divider>
+          <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="700px">
             <template v-slot:activator="{ on }">
               <v-btn color="warning" dark class="mb-2" v-on="on"
@@ -182,7 +183,7 @@
         <v-data-table
           :headers="headers"
           :items="table"
-          class="elevation-4"
+
           :rows-per-page-items="[
             5,
             10,
@@ -466,7 +467,7 @@ export default {
         this.priceCategoryInner = this.optionsOfSale.priceCategory.map(
           e => +e || 0
         );
-        this.calculateCells();
+        if(this.optionsOfSale.calculate)this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
       },
