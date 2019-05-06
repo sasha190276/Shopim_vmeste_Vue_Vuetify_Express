@@ -437,10 +437,10 @@ export default {
     // }
   },
   computed: {
-    submitError: function() {
-      let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
-      return this.haveErrInTable || !!this.errors.items.length || sameName;
-    }
+    // submitError: function() {
+    //   let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
+    //   return this.haveErrInTable || !!this.errors.items.length || sameName;
+    // }
   },
   methods: {
     // getHeadersSample: async function() {

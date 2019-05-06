@@ -1,7 +1,7 @@
 <template>
   <v-flex>
     <!--todo блок с ошибками-->
-    <v-layout v-if="haveError"  class="white mb-2">
+    <v-layout v-if="haveError" class="white mb-2">
       <v-flex md12 col pa-0>
         <v-card>
           <v-toolbar color="red" dark>
@@ -33,11 +33,11 @@
       </v-flex>
     </v-layout>
     <!--todo блок с таблицей-->
-    <v-layout  class="white">
+    <v-layout class="white">
       <v-flex md12 col pa-0>
-        <v-toolbar color="primary" dark >
+        <v-toolbar color="primary" dark>
           <!--<v-toolbar-title>{{ nameOfTable }}</v-toolbar-title>-->
-         <!-- <v-divider class="mx-2" inset vertical></v-divider>-->
+          <!-- <v-divider class="mx-2" inset vertical></v-divider>-->
 
           <v-btn
             color="success"
@@ -183,7 +183,6 @@
         <v-data-table
           :headers="headers"
           :items="table"
-
           :rows-per-page-items="[
             5,
             10,
@@ -467,7 +466,7 @@ export default {
         this.priceCategoryInner = this.optionsOfSale.priceCategory.map(
           e => +e || 0
         );
-        if(this.optionsOfSale.calculate)this.calculateCells();
+        this.calculateCells();
         // this.calcAllTotal();
         // this.calcAllDelivery();
       },
@@ -501,11 +500,13 @@ export default {
   },
   methods: {
     calculateCells: function() {
-      this.table.forEach(e => {
-        e["Итого"] !== undefined ? this.calcTotal(e) : "";
-        e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
-        e["Итого"] !== undefined ? this.calcToPay(e) : "";
-      });
+      if (this.optionsOfSale.calculate) {
+        this.table.forEach(e => {
+          e["Итого"] !== undefined ? this.calcTotal(e) : "";
+          e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
+          e["Итого"] !== undefined ? this.calcToPay(e) : "";
+        });
+      }
       this.validateAllCells();
     },
     // подсчет значения ИТОГО
@@ -518,7 +519,6 @@ export default {
         : (row["К оплате"] = result || "");
     },
     calcTotal: function(row) {
-
       if (
         row["Цена"] === undefined ||
         typeof row["Цена"] !== "number" ||
@@ -535,7 +535,7 @@ export default {
 
         let total = row["Цена"] * row["Количество"];
         total = (total + (total / 100) * priceCat) * this.exchangeCourse;
-      row["Итого"] = this.gaussRound(total, 2);
+        row["Итого"] = this.gaussRound(total, 2);
       }
     },
     calcDelivery: function(row) {
