@@ -1,37 +1,5 @@
 <template>
   <v-flex>
-    <!--todo блок с ошибками-->
-<!--    <v-layout v-if="haveError" class="white mb-2">
-      <v-flex md12 col pa-0>
-        <v-card>
-          <v-toolbar color="red" dark>
-            <v-toolbar-title>Ошибки:</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-          </v-toolbar>
-          <v-list>
-            <template v-for="(item, index) in errorList">
-              <v-list-tile
-                v-if="!!item.list.length"
-                :key="item.name"
-                ripple
-                @click=""
-              >
-                <v-list-tile-content>
-                  <v-list-tile-sub-title class="text&#45;&#45;primary font-weight-bold">
-                    {{ item.name }}:
-                    <span v-for="(element, index) in item.list">
-                      <span v-if="index != 0">, </span>
-                      <span class="error&#45;&#45;text "> {{ element }}</span>
-                    </span>
-                  </v-list-tile-sub-title>
-                </v-list-tile-content>
-              </v-list-tile>
-            </template>
-          </v-list>
-        </v-card>
-      </v-flex>
-    </v-layout>-->
     <!--todo блок с таблицей-->
     <v-layout class="white">
       <v-flex md12 col pa-0>
@@ -193,7 +161,6 @@
             }
           ]"
         >
-
           <template v-slot:headers="props">
             <tr>
               <th>
@@ -332,10 +299,9 @@
           </template>
           <!--todo блок обработки пустой таблицы-->
           <template v-slot:no-data>
-
-              <v-alert :value="true"color="error" icon="warning">
-                Sorry, nothing to display here :(
-              </v-alert>
+            <v-alert :value="true" color="error" icon="warning">
+              Sorry, nothing to display here :(
+            </v-alert>
 
             <!--todo кнопка ресет ненужная пока-->
             <!--<v-btn color="primary" @click="initialize">Reset</v-btn>-->
@@ -420,21 +386,14 @@ export default {
     this.markNumberCol();
     //todo this.validateAllCells();
     this.calculateCells();
-    // this.calcAllTotal();
-    // this.calcAllDelivery();
   },
   mounted() {
     this.editedItem = this.headersForEditAndCreateItems();
   },
   computed: {
     haveError: function() {
-      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&");
-      console.log("haveError");
       let statusError = !!this.errorList.filter(e => e.list.length !== 0)
         .length;
-        // this.err.statusError = this.statusError;
-        // this.err.error = [...this.errorList];
-      //this.$emit("tableErrorStatus", {statusError, error: this.errorList});
       return statusError;
     },
     errorList: function() {
@@ -467,7 +426,7 @@ export default {
     }
   },
   watch: {
-  optionsOfSale: {
+    optionsOfSale: {
       handler: function() {
         console.log("optionsOfSale_watch");
         this.exchangeCourse = +this.optionsOfSale.exchange || 1;
@@ -477,8 +436,6 @@ export default {
           e => +e || 0
         );
         this.calculateCells();
-        // this.calcAllTotal();
-        // this.calcAllDelivery();
       },
       deep: true
     },
@@ -491,8 +448,8 @@ export default {
     table: {
       handler: function() {
         console.log("table_change");
-          this.err.statusError = this.haveError;
-          this.err.error = [...this.errorList];
+        this.err.statusError = this.haveError;
+        this.err.error = [...this.errorList];
       },
       deep: true
     },
@@ -502,12 +459,10 @@ export default {
         this.checkHeaders();
         //todo this.validateAllCells();
         this.calculateCells();
-        // this.calcAllTotal();
-        // this.calcAllDelivery();
         this.createdItemDefault["Номер столбца"] = this.headers.length + 1;
         this.closeCreateCol();
-          this.err.statusError = this.haveError;
-          this.err.error = [...this.errorList];
+        this.err.statusError = this.haveError;
+        this.err.error = [...this.errorList];
       },
       deep: true
     }
@@ -522,7 +477,6 @@ export default {
         });
       }
       this.validateAllCells();
-
     },
     // подсчет значения ИТОГО
     calcToPay: function(row) {
@@ -604,8 +558,6 @@ export default {
         this.headersOfTable[colName] = newHeader;
         await TableHeaders.fetchHeadersSampleUpdate(newHeader);
       }
-      //this.calcAllTotal();
-      //this.validateAllCells();
       this.closeCreateCol();
     },
     //todo закрытие окна для заполнения столбца значениями по умолчанию
@@ -623,8 +575,6 @@ export default {
       this.table.forEach(e => (e[header] = this.defaultFillCol));
       //todo this.validateAllCells();
       this.calculateCells();
-      // this.calcAllTotal();
-      // this.calcAllDelivery();
       this.closeAddDefaultValue();
     },
     close() {
@@ -646,8 +596,6 @@ export default {
 
       //todo this.validateAllCells();
       this.calculateCells();
-      // this.calcAllTotal();
-      // this.calcAllDelivery();
       this.close();
     },
     // TODO возврат цвета заголовка
@@ -802,7 +750,6 @@ export default {
         }
       });
 
-      //this.calcAllTotal();
       this.setRowWithError();
     },
     // todo проверка нужно ли выводить валюту
@@ -839,10 +786,6 @@ export default {
         this.headersFlag[key].depricated && !this.depHeaders.includes(key)
           ? this.depHeaders.push(key)
           : "";
-        // this.headersFlag[key].doubleValue &&
-        // !this.doubleHeaders.includes(this.headersFlag[key].text)
-        //   ? this.doubleHeaders.push(this.headersFlag[key].text)
-        //   : "";
         this.headersFlag[key].doubleValue && !this.doubleHeaders.includes(key)
           ? this.doubleHeaders.push(key)
           : "";
@@ -857,7 +800,6 @@ export default {
       this.cellsByRow.forEach((e, i) =>
         e.includes(false) ? this.rowWithError.push(i + 1) : ""
       );
-
     },
     gaussRound(num, decimalPlaces) {
       var d = decimalPlaces || 0,
