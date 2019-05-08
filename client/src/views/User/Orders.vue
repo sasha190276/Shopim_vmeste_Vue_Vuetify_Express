@@ -216,6 +216,78 @@
         </v-flex>
       </v-layout>
 
+
+      <v-layout v-show="haveErrInTable[0].statusError"   class="white mb-2">
+        <v-flex md12 col pa-0>
+          <v-card>
+            <v-toolbar color="red" dark>
+              <v-toolbar-title>Ошибки в таблице заказов:</v-toolbar-title>
+
+              <v-spacer></v-spacer>
+            </v-toolbar>
+            <v-list>
+              <template v-for="(item, index) in haveErrInTable[0].error">
+                <v-list-tile
+                    v-if="!!item.list.length"
+                    :key="item.name"
+                    ripple
+                    @click=""
+                >
+                  <v-list-tile-content>
+                    <v-list-tile-sub-title class="text--primary font-weight-bold">
+                      {{ item.name }}:
+                      <span v-for="(element, index) in item.list">
+                      <span v-if="index != 0">, </span>
+                      <span class="error--text "> {{ element }}</span>
+                    </span>
+                    </v-list-tile-sub-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+              </template>
+            </v-list>
+          </v-card>
+        </v-flex>
+      </v-layout>
+
+
+      <v-layout v-show="haveErrInTable[1].statusError" class="white mb-2">
+        <v-flex md12 col pa-0>
+          <v-card>
+            <v-toolbar color="red" dark>
+              <v-toolbar-title>Ошибки в таблице платежей:</v-toolbar-title>
+
+              <v-spacer></v-spacer>
+            </v-toolbar>
+            <v-list>
+              <template v-for="(item, index) in haveErrInTable[1].error">
+                <v-list-tile
+                    v-if="!!item.list.length"
+                    :key="item.name"
+                    ripple
+                    @click=""
+                >
+                  <v-list-tile-content>
+                    <v-list-tile-sub-title class="text--primary font-weight-bold">
+                      {{ item.name }}:
+                      <span v-for="(element, index) in item.list">
+                      <span v-if="index != 0">, </span>
+                      <span class="error--text "> {{ element }}</span>
+                    </span>
+                    </v-list-tile-sub-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+              </template>
+            </v-list>
+          </v-card>
+        </v-flex>
+      </v-layout>
+
+
+
+
+
+
+
       <v-layout>
         <v-flex elevation-4>
           <v-tabs grow centered color="cyan" dark icons-and-text>
@@ -239,6 +311,7 @@
                   name-of-table="Таблица заказов!!!"
                   :table="table"
                   :headers="headers"
+                  :err= 'haveErrInTable[0]'
                   :optionsOfSale="{
                     yearOfSale,
                     currency,
@@ -247,9 +320,9 @@
                     unitForDelivery,
                     pricePerUnit,
                     priceCategory,
-                    calculate: true
+                    calculate: true,
                   }"
-                  @tableErrorStatus="val => (this.haveErrInTable = val)"
+
                 ></my-table>
               </v-layout>
             </v-tab-item>
@@ -260,6 +333,7 @@
                         name-of-table="Таблица заказов!!!"
                         :table="tableWithPay"
                         :headers="headersOfTableWithPay"
+                        :err= 'haveErrInTable[1]'
                         :optionsOfSale="{
                     yearOfSale,
                     currency,
@@ -268,9 +342,9 @@
                     unitForDelivery,
                     pricePerUnit,
                     priceCategory,
-                    calculate: false
+                    calculate: false,
                   }"
-                        @tableErrorStatus="val => (this.haveErrInTable = val)"
+
                 ></my-table>
               </v-layout>
             </v-tab-item>
@@ -290,13 +364,14 @@ export default {
     validator: "new"
   },
   data: () => ({
-    isSameName: false,
+
+     isSameName: false,
     checkbox: false,
     priceCategory: [0, 0, 0, 0, 0],
     table_conf: {},
     table_conf_tableWithPay: {},
-    haveErrInTable: false,
-    // todo поля блока с параметрами закупки
+    haveErrInTable: [{statusError: false, error: []},{statusError: false, error: []}],
+     // todo поля блока с параметрами закупки
     nameOfSale: "",
     yearOfSale: "",
     currency: "$",
@@ -430,20 +505,24 @@ export default {
     fileName: function() {
       this.nameOfSale = this.fileName.replace(/\.[a-z]{3,}$/, "") || "";
       this.yearOfSale = this.fileName.match(/[0-9]{4}/, "")[0] || "";
-    }
+    },
+
+
 
     // priceCategory: function() {
     //   console.log(this.priceCategory);
     // }
   },
   computed: {
-    // submitError: function() {
-    //   let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
-    //   return this.haveErrInTable || !!this.errors.items.length || sameName;
-    // }
-  },
+    submitError: function() {
+      let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
+      return this.haveErrInTable.map(e=>e.statusError).includes(true)  || sameName; // || !!this.errors.items.length
+    },
+
+ },
   methods: {
-    // getHeadersSample: async function() {
+
+   // getHeadersSample: async function() {
     //   this.table_conf = await TableHeader.fetchHeadersSample();
     // },
     submit: async function() {
@@ -566,7 +645,7 @@ export default {
           });
 
           this.tableWithPay = tableWithPay.map(function(e) {
-            return {
+          return {
               Ник: e["Ник"],
               "Сумма платежа": e["Сумма платежа"],
               "Дата учета": new Date(Date.parse(e["Дата учета"]) + 17 * 1000),
@@ -575,15 +654,21 @@ export default {
           });
 
           this.table = XLSX.utils
-            .sheet_to_json(worksheet, { defval: "" })
-            .filter(e => {
-              if (e["Ник"] !== undefined) {
-                return e["Ник"] !== "";
-              }
-            });
+            .sheet_to_json(worksheet, { defval: "" });
           this.headers = this.setHeaders(this.table, true);
+
           this.headersOfTableWithPay = this.setHeaders(this.tableWithPay);
-        });
+            this.table = this.table.filter(e => {
+                if (e["Ник"] !== undefined) {
+                    return e["Ник"] !== "";
+                }
+            });
+          this.tableWithPay= this.tableWithPay.filter(e => {
+              if (e["Ник"] !== undefined) {
+                  return e["Ник"] !== "";
+              }
+          });
+         });
       } else {
         this.fileName = "";
         this.excelFile = "";
@@ -625,36 +710,39 @@ export default {
     // создание массива заголовков
     setHeaders: function(table, forPay = false) {
       let headers = [];
-      table[0]["№"] === undefined
-        ? headers.push({
-            text: "№",
-            value: "№",
-            sortable: false
-          })
-        : "";
 
-      for (let e in table[0]) {
-        let text = e;
-        if (this.headersForChange[e] !== undefined) {
-          text = this.headersForChange[e];
-          this.changeKey(e, text);
-          e = text;
-        }
-        headers.push({
-          text: text,
-          value: e,
-          sortable: false
-        });
-      }
-      if (forPay) {
-        table[0]["К оплате"] === undefined
-          ? headers.push({
-              text: "К оплате",
-              value: "К оплате",
-              sortable: false
-            })
-          : "";
-      }
+          table[0]["№"] === undefined
+              ? headers.push({
+                  text: "№",
+                  value: "№",
+                  sortable: false
+              })
+              : "";
+
+          for (let e in table[0]) {
+              let text = e;
+              if (this.headersForChange[e] !== undefined) {
+                  text = this.headersForChange[e];
+                  this.changeKey(e, text);
+                  e = text;
+              }
+              headers.push({
+                  text: text,
+                  value: e,
+                  sortable: false
+              });
+          }
+          if (forPay) {
+              table[0]["К оплате"] === undefined
+                  ? headers.push({
+                      text: "К оплате",
+                      value: "К оплате",
+                      sortable: false
+                  })
+                  : "";
+
+          }
+
       return headers
     },
     // изменение ключа в таблице
