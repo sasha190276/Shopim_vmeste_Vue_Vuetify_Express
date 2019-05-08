@@ -163,7 +163,7 @@
         >
           <template v-slot:headers="props">
             <tr>
-              <th>
+              <th v-if="table.length">
                 Actions
               </th>
 
@@ -384,7 +384,6 @@ export default {
     this.headersOfTable = this.config.headersOfTable;
     this.checkHeaders();
     this.markNumberCol();
-    //todo this.validateAllCells();
     this.calculateCells();
   },
   mounted() {
@@ -392,9 +391,7 @@ export default {
   },
   computed: {
     haveError: function() {
-      let statusError = !!this.errorList.filter(e => e.list.length !== 0)
-        .length;
-      return statusError;
+      return !!this.errorList.filter(e => e.list.length !== 0).length;
     },
     errorList: function() {
       return [
@@ -457,7 +454,6 @@ export default {
       handler: function() {
         console.log("headers_change");
         this.checkHeaders();
-        //todo this.validateAllCells();
         this.calculateCells();
         this.createdItemDefault["Номер столбца"] = this.headers.length + 1;
         this.closeCreateCol();
@@ -469,7 +465,7 @@ export default {
   },
   methods: {
     calculateCells: function() {
-      if (this.optionsOfSale.calculate) {
+      if (this.optionsOfSale.calculate && this.table.length) {
         this.table.forEach(e => {
           e["Итого"] !== undefined ? this.calcTotal(e) : "";
           e["Доставка"] !== undefined ? this.calcDelivery(e) : "";
@@ -539,8 +535,9 @@ export default {
       }
       let type = this.createdItem["Тип данных"];
       let header = { text: colName, value: colName, sortable: false };
-      if (this.table[0][colName] === undefined) {
-        this.table.forEach(e => this.$set(e, colName, colValue)); //e[colName] = colValue);
+
+      if (this.table.length && this.table[0][colName] === undefined) {
+        this.table.forEach(e => this.$set(e, colName, colValue));
       }
 
       this.headersFlag[colName] === undefined
@@ -557,6 +554,7 @@ export default {
         };
         this.headersOfTable[colName] = newHeader;
         await TableHeaders.fetchHeadersSampleUpdate(newHeader);
+        if (response){console.log('error save header in DB!!!!!!')};
       }
       this.closeCreateCol();
     },
@@ -573,7 +571,6 @@ export default {
       let header = this.headers.filter(e => e.value === this.colForFill)[0]
         .value;
       this.table.forEach(e => (e[header] = this.defaultFillCol));
-      //todo this.validateAllCells();
       this.calculateCells();
       this.closeAddDefaultValue();
     },
@@ -594,7 +591,6 @@ export default {
       }
       console.log("saveCrud");
 
-      //todo this.validateAllCells();
       this.calculateCells();
       this.close();
     },
@@ -620,7 +616,10 @@ export default {
       let value = this.headers.splice(index, 1);
       this.headers.splice(index + direction, 0, value[0]);
     },
+
+
     //todo удаление столбца
+      //todo Разрбраться с удалением поля НИК (можно ли)
     deleteCol(index) {
       confirm("Are you sure you want to delete this item?") &&
         this.headers.splice(index, 1);
@@ -664,7 +663,6 @@ export default {
       confirm("Are you sure you want to delete this item?") &&
         this.table.splice(index, 1);
       this.markNumberCol();
-      //todo this.validateAllCells();
     },
     closeChangeHeader: function() {
       setTimeout(() => {
@@ -709,9 +707,7 @@ export default {
       this.validAllHeaders(); // проверка заголовков на наличие ошибок
     },
     // создание массива с результатами валидации ячеек
-    //todo не проверять столбец ИТОГО после восстановления всех значений строка остается красной
-
-    validateAllCells: function() {
+        validateAllCells: function() {
       console.log("validateAllCells");
       this.cellsByRow = [];
       for (let i = 0; i < this.table.length; i++) {
