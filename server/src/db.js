@@ -13,8 +13,17 @@ module.exports = {
       const client = await MongoClient.connect(url, { useNewUrlParser: true });
       const collections = await client.db(dbName).collections();
       if (!collections.length) {
-        Object.keys(mongoSamples).forEach((key) => {
-          client.db(dbName).collection(key).insertMany(mongoSamples[key]);
+        Object.keys(mongoSamples).forEach(async (key) => {
+          await client.db(dbName).createCollection(key);
+          await client.db(dbName).collection(key).insertMany(mongoSamples[key]);
+        });
+      } else {
+        const collectionNames = collections.map(e => e.s.name);
+        Object.keys(mongoSamples).forEach(async (key) => {
+          if (!collectionNames.includes(key)) {
+            await client.db(dbName).createCollection(key);
+            await client.db(dbName).collection(key).insertMany(mongoSamples[key]);
+          }
         });
       }
       state.db = client.db(dbName);
