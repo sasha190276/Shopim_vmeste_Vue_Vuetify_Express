@@ -1,31 +1,27 @@
 const { MongoClient } = require('mongodb');
+const mongoSamples = require('./mongo_sample/mongoSamples');
+
 
 const state = {
   db: null,
 };
+const dbName = 'shopim_vmeste';
 module.exports = {
-  // connect(url, done) {
-  //   if (state.db) return done();
-  //   MongoClient.connect(url, { useNewUrlParser: true }, function(err, db) {
-  //     if (err) return done(err);
-  //     state.db = db.db();
-  //     done();
-  //   });
-  // },
   async connect(url, done) {
     if (state.db) return done();
     try {
       const client = await MongoClient.connect(url, { useNewUrlParser: true });
-      state.db = client.db('shopim_vmeste');
+      const collections = await client.db(dbName).collections();
+      if (!collections.length) {
+        Object.keys(mongoSamples).forEach((key) => {
+          client.db(dbName).collection(key).insertMany(mongoSamples[key]);
+        });
+      }
+      state.db = client.db(dbName);
       done();
     } catch (err) { done(err); }
   },
   getDb() {
     return state.db;
   },
-  // async test() {
-  //   console.log('TEST');
-  //   const result = await state.db.collection('headers_of_orders_table').find({}).toArray();
-  //   return result;
-  // },
 };

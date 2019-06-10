@@ -6,7 +6,7 @@ export default {
   },
   async fetchUsersImport(users) {
     let result = await api().put("users", users);
-    console.log(users);
+    //console.log(users);
     return result.data;
   }
 };
