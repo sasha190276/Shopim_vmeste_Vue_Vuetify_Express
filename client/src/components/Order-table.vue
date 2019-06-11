@@ -249,50 +249,25 @@
                   checkCurrencyTextNeed(header.value, props.item[header.value])
                 "
               >
-                <span>
-                  <!--style="white-space: nowrap"-->
-                  <span
-                    :class="[
-                      {
-                        textWithError: !validCell(
-                          header.value,
-                          props.item[header.value]
-                        )
-                      },
-                      {
-                        textNotImport: headersFlag[header.value]['notImport']
-                      }
-                    ]"
-                  >
-                    {{ props.item[header.value] }}
-                  </span>
-                  <span
-                    v-if="
-                      ['Итого', 'Доставка', 'К оплате'].includes(
-                        header.value
-                      ) &&
-                        props.item[header.value] !== '' &&
-                        checkCurrencyTextNeed(
-                          header.value,
-                          props.item[header.value]
-                        )
-                    "
-                  >
-                    {{ " руб." }}
-                  </span>
-                  <span
-                    v-else-if="
-                      !['Итого', 'Доставка', 'К оплате'].includes(
-                        header.value
-                      ) &&
-                        checkCurrencyTextNeed(
-                          header.value,
-                          props.item[header.value]
-                        )
-                    "
-                  >
-                    {{ " " + optionsOfSale.currency }}
-                  </span>
+                <span
+                  :class="[
+                    {
+                      textWithError: !validCell(
+                        header.value,
+                        props.item[header.value]
+                      )
+                    },
+                    {
+                      textNotImport: headersFlag[header.value]['notImport']
+                    }
+                  ]"
+                  v-html="
+                    valueForDisplayed(props.item[header.value], header.value)
+                  "
+                >
+                  <!--                  {{-->
+                  <!--                    valueForDisplayed(props.item[header.value], header.value)-->
+                  <!--                  }}-->
                 </span>
               </td>
             </tr>
@@ -326,6 +301,15 @@ export default {
     err: Object
   },
   data: () => ({
+    headersNeedCurrencyText: [
+      "Цена",
+      "Итого",
+      "Доставка",
+      "К оплате",
+      "Сумма платежа"
+    ],
+    headersRublesCurrency: ["Итого", "Доставка", "К оплате", "Сумма платежа"],
+    headersAnotherCurrency: [],
     exchangeCourse: 1,
     exchangeOfDelivery: 1,
     pricePerUnit: 0,
@@ -464,6 +448,27 @@ export default {
     }
   },
   methods: {
+    valueForDisplayed: function(value, header) {
+      if (value instanceof Date) {
+        return value.format();
+      }
+      if (
+        this.headersRublesCurrency.includes(header) &&
+        value !== "" &&
+        this.checkCurrencyTextNeed(header, value)
+      ) {
+        return value + " руб.";
+      } else if (
+        !this.headersRublesCurrency.includes(header) &&
+        value !== "" &&
+        this.checkCurrencyTextNeed(header, value)
+      ) {
+        return value + " " + this.optionsOfSale.currency;
+      }
+      if (/^http[s]?[:].*/.test(value))
+        return '<a href="' + value + '">Ссылка</a>';
+      return value;
+    },
     calculateCells: function() {
       if (this.optionsOfSale.calculate && this.table.length) {
         this.table.forEach(e => {
@@ -554,7 +559,9 @@ export default {
         };
         this.headersOfTable[colName] = newHeader;
         await TableHeaders.fetchHeadersSampleUpdate(newHeader);
-        if (response){console.log('error save header in DB!!!!!!')};
+        if (response) {
+          console.log("error save header in DB!!!!!!");
+        }
       }
       this.closeCreateCol();
     },
@@ -617,9 +624,8 @@ export default {
       this.headers.splice(index + direction, 0, value[0]);
     },
 
-
     //todo удаление столбца
-      //todo Разрбраться с удалением поля НИК (можно ли)
+    //todo Разрбраться с удалением поля НИК (можно ли)
     deleteCol(index) {
       confirm("Are you sure you want to delete this item?") &&
         this.headers.splice(index, 1);
@@ -707,7 +713,7 @@ export default {
       this.validAllHeaders(); // проверка заголовков на наличие ошибок
     },
     // создание массива с результатами валидации ячеек
-        validateAllCells: function() {
+    validateAllCells: function() {
       console.log("validateAllCells");
       this.cellsByRow = [];
       for (let i = 0; i < this.table.length; i++) {
@@ -751,7 +757,7 @@ export default {
     // todo проверка нужно ли выводить валюту
     checkCurrencyTextNeed: function(headerValue, value) {
       return (
-        ["Цена", "Итого", "Доставка", "К оплате"].includes(headerValue) &&
+        this.headersNeedCurrencyText.includes(headerValue) &&
         this.validCell(headerValue, value)
       );
     },
@@ -763,7 +769,7 @@ export default {
       ) {
         return true;
       }
-      return value === "" || /^[0-9]+([.,][0-9]+)?$/.test(value);
+      return value === "" || /^[-]?[0-9]+([.,][0-9]+)?$/.test(value);
     },
     // валидация заголовков
     validAllHeaders: function() {

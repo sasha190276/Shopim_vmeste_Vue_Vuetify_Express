@@ -507,7 +507,7 @@ export default {
       let sameName = this.isSameName && this.checkbox ? false : this.isSameName;
       return (
         this.haveErrInTable.map(e => e.statusError).includes(true) || sameName
-      ); // || !!this.errors.items.length
+      );
     }
   },
   methods: {
