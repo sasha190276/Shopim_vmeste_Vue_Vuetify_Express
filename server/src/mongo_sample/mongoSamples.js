@@ -174,4 +174,6 @@ module.exports = {
   orders: [],
   purchases: [],
   users: [],
+  incomingPayments: [],
+  outgoingPayments: [],
 };

@@ -33,9 +33,9 @@
                 v-model="nameOfSale"
                 v-validate="{
                   required: true,
-                  max: 20
+                  max: 30
                 }"
-                :counter="20"
+                :counter="30"
                 :error-messages="errors.collect('nameOfSale')"
                 label="Название закупки"
                 data-vv-name="nameOfSale"
@@ -345,6 +345,22 @@
         </v-flex>
       </v-layout>
     </div>
+
+    <v-layout col justify-center>
+      <v-dialog v-model="dialog_window" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline justify-space-around">{{
+            resolveWindowTitle
+          }}</v-card-title>
+          <v-card-text>{{ resolveText }}</v-card-text>
+          <v-card-actions class="justify-space-around">
+            <v-btn color="green darken-1 " flat @click="dialog_window = false"
+              >OK</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-layout>
   </v-container>
 </template>
 <script>
@@ -357,6 +373,9 @@ export default {
     validator: "new"
   },
   data: () => ({
+    dialog_window: false,
+    resolveWindowTitle: "Status resolve",
+    resolveText: "",
     isSameName: false,
     checkbox: false,
     priceCategory: [0, 0, 0, 0, 0],
@@ -513,27 +532,32 @@ export default {
   methods: {
     submit: async function() {
       let result = [];
+      let resultTableWithPay = [];
       let nicksUniq = new Set();
       let orderOptions = {
         name: this.nameOfSale,
-        year: this.yearOfSale,
+        year: +this.yearOfSale,
         currency: this.currency,
-        exchange: this.exchange,
+        exchange: +this.exchange || 0,
         priceCategory: this.priceCategory.map(e => +e),
         unitForDelivery: this.unitForDelivery,
-        pricePerUnit: this.pricePerUnit,
+        pricePerUnit: +this.pricePerUnit || 0,
         currencyOfDelivery: this.currencyOfDelivery,
-        exchangeOfDelivery: this.exchangeOfDelivery,
+        exchangeOfDelivery: +this.exchangeOfDelivery || 0,
         headers: this.headers.reduce((res, current) => {
           current.value !== "№" ? res.push(current.value) : "";
           return res;
         }, [])
       };
       this.table.forEach(row => {
-        row["Ник"] ? nicksUniq.add(row["Ник"]) : "";
+        if (row["Ник"]) {
+          row["Ник"] = row["Ник"] + "";
+          nicksUniq.add(row["Ник"]);
+        }
+        //row["Ник"] ? nicksUniq.add(row["Ник"]) : "";
         let rowResult = {};
         rowResult.nameOfSale = this.nameOfSale;
-        rowResult.yearOfSale = this.yearOfSale;
+        rowResult.yearOfSale = +this.yearOfSale;
         for (let key in row) {
           if (key === "None" || key === "№") continue;
           if (
@@ -543,10 +567,41 @@ export default {
             typeof row[key] === "string"
               ? (row[key] = +row[key].replace(/,/, "."))
               : "";
+          } else if (
+            row[key] === "" &&
+            this.table_conf.headersOfTable[key].content === "number"
+          ) {
+            row[key] = 0;
+          } else {
+            row[key] = row[key] + "";
           }
           rowResult[key] = row[key];
         }
         result.push(rowResult);
+      });
+      this.tableWithPay.forEach(row => {
+        if (row["Ник"]) {
+          row["Ник"] = row["Ник"] + "";
+          nicksUniq.add(row["Ник"]);
+        }
+
+        //row["Ник"] ? nicksUniq.add(row["Ник"]) : "";
+        let rowResult = {};
+        rowResult.importFrom = this.nameOfSale;
+        for (let key in row) {
+          if (key === "None" || key === "№") continue;
+          if (
+            row[key] !== "" &&
+            this.table_conf_tableWithPay.headersOfTable[key].content ===
+              "number"
+          ) {
+            typeof row[key] === "string"
+              ? (row[key] = +row[key].replace(/,/, "."))
+              : "";
+          }
+          rowResult[key] = row[key];
+        }
+        resultTableWithPay.push(rowResult);
       });
       // console.log(result);
       // console.log(orderOptions);
@@ -561,12 +616,19 @@ export default {
           });
         userImportResult = await Users.fetchUsersImport(nicks);
       }
-
       let resolveOfDb = await Purchases.fetchPurchaseAndOrdersImport({
         name: this.nameOfSale,
         purchase: orderOptions,
-        orders: result
+        orders: result,
+        payments: resultTableWithPay
       });
+      //this.resolveWindowTitle = this.nameOfSale;
+      if (!resolveOfDb) {
+        this.resolveText = this.nameOfSale + " is saved.";
+      } else {
+        this.resolveText = "ERROR. Document isn't save!";
+      }
+      this.dialog_window = true;
       console.log(userImportResult + "=====" + resolveOfDb);
     },
 

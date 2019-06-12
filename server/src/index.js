@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+
+
 const cors = require('cors');
 const morgan = require('morgan');
 
@@ -8,6 +10,10 @@ const db = require('./db');
 const config = require('./config/config');
 
 const app = express();
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+
 
 app.use(morgan('combined'));
 app.use(bodyParser.json());
