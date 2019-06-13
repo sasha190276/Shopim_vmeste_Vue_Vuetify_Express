@@ -4,6 +4,7 @@ const router = express.Router();
 const db = require('../db');
 
 router.post('/import_purchase', async (req, res) => {
+  console.log(req);
   const purchases = await db.getDb().collection('purchases').find({ name: req.body.name }).toArray();
   res.send(purchases);
 });

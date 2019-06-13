@@ -8,5 +8,9 @@ export default {
     let result = await api().put("users", users);
     //console.log(users);
     return result.data;
+  },
+  async fetchTestGoogle() {
+    let result = await api().get("users");
+    return result.data;
   }
 };
