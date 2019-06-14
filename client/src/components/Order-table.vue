@@ -364,6 +364,9 @@ export default {
     rowWithError: []
   }),
   beforeMount() {
+    console.log('------------------------------------');
+    console.log(this.config);
+    console.log('---------------------------------------');
     this.depForChangeValueHeaders = this.config.depForChangeValueHeaders;
     this.headersOfTable = this.config.headersOfTable;
     this.checkHeaders();

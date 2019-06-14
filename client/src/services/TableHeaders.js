@@ -12,5 +12,9 @@ export default {
   },
   async fetchHeadersSampleUpdate(header) {
     await api().put("headers_sample", header);
+  },
+  async fetchHeadersGoogleSheetsWithRepliesAboutPayments() {
+    let result = await api().get("headersGoogleSheetsWithRepliesAboutPayments");
+    return result.data;
   }
 };
