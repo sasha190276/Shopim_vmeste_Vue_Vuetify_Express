@@ -432,6 +432,14 @@ export default {
     table: {
       handler: function() {
         console.log("table_change");
+
+        this.depForChangeValueHeaders = this.config.depForChangeValueHeaders;
+        this.headersOfTable = this.config.headersOfTable;
+        this.checkHeaders();
+        this.markNumberCol();
+        this.calculateCells();
+
+
         this.err.statusError = this.haveError;
         this.err.error = [...this.errorList];
       },
@@ -522,6 +530,7 @@ export default {
     // проверка ряда на наличие ошибок в значениях
     checkErrRow: function(index) {
       console.log("checkErrRow");
+      //console.log(index+'+++++++++++'+this.cellsByRow)[index-1];
       return this.cellsByRow[index - 1].includes(false);
     },
     // закрытие окна изменений в таблицы
