@@ -22,7 +22,7 @@
             ></v-text-field>
           </template>
           <v-date-picker
-            v-model="dateStart"
+            v-model="dateStartPick"
             @input="menuStart = false"
           ></v-date-picker>
         </v-menu>
@@ -48,14 +48,14 @@
             ></v-text-field>
           </template>
           <v-date-picker
-            v-model="dateEnd"
+            v-model="dateEndPick"
             @input="menuEnd = false"
           ></v-date-picker>
         </v-menu>
       </v-flex>
-      <v-flex>
-        <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>
-      </v-flex>
+<!--      <v-flex>-->
+<!--        <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>-->
+<!--      </v-flex>-->
     </v-layout>
     <v-layout
       v-show="haveErrInTable[0].statusError"
@@ -128,8 +128,10 @@ export default {
     return {
       maxDate: null,
       minDate: null,
-      dateStart: new Date("01-01-2019").toISOString().substr(0, 10),
-      dateEnd: new Date().toISOString().substr(0, 10),
+      dateStartPick: new Date("01-01-2019").toISOString().substr(0, 10),
+      dateEndPick: new Date().toISOString().substr(0, 10),
+      dateStart: this.dateStartPick,
+      dateEnd: this.dateEndPick,
 
       menuStart: false,
       menuEnd: false,
@@ -187,9 +189,29 @@ export default {
       },
       deep: true
     },
-    dateStart: function() {
-      //if (Date.parse(this.dateStart) > Date.parse(this.minDate))
-        this.setTable();
+    dateStartPick: function() {
+      if (Date.parse(this.dateStartPick) < Date.parse(this.minDate)) {
+        this.dateStart = this.minDate;
+      } else if (Date.parse(this.dateStartPick) > Date.parse(this.dateEnd)) {
+        this.dateStart = this.dateEnd;
+      } else if (Date.parse(this.dateStartPick) > Date.parse(this.maxDate)) {
+        this.dateStart = this.maxDate;
+      } else {
+        this.dateStart = this.dateStartPick;
+      }
+      this.setTable();
+    },
+    dateEndPick: function() {
+      if (Date.parse(this.dateEndPick) > Date.parse(this.maxDate)) {
+        this.dateEnd = this.maxDate;
+      } else if (Date.parse(this.dateEndPick) < Date.parse(this.dateStart)) {
+        this.dateEnd = this.dateStart;
+      } else if (Date.parse(this.dateEndPick) < Date.parse(this.minDate)) {
+        this.dateEnd = this.minDate;
+      } else {
+        this.dateEnd = this.dateEndPick;
+      }
+      this.setTable();
     },
     dateEnd: function() {
       this.setTable();
@@ -221,8 +243,8 @@ export default {
         this.maxDate = this.table[this.table.length - 1]["Отметка времени"]
           .toISOString()
           .substr(0, 10);
-        this.dateEnd = this.maxDate;
-        this.dateStart = this.minDate;
+        this.dateEndPick = this.maxDate;
+        this.dateStartPick = this.minDate;
       }
       let endDate = Date.parse(this.dateEnd);
       let strtDate = Date.parse(this.dateStart);
