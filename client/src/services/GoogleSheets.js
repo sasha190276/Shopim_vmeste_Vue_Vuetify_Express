@@ -2,7 +2,7 @@ import api from "@/services/api";
 export default {
   async fetchGoogleSheetsPost(params) {
     let result = await api().post("googlesheets", params);
-    console.log(result.data);
+    //console.log(result.data);
     return result.data;
   },
   // async fetchUsersImport(users) {

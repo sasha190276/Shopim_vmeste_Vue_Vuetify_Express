@@ -364,9 +364,9 @@ export default {
     rowWithError: []
   }),
   beforeMount() {
-    console.log('------------------------------------');
-    console.log(this.config);
-    console.log('---------------------------------------');
+    // console.log('------------------------------------');
+    // console.log(this.config);
+    // console.log('---------------------------------------');
     this.depForChangeValueHeaders = this.config.depForChangeValueHeaders;
     this.headersOfTable = this.config.headersOfTable;
     this.checkHeaders();
@@ -381,6 +381,7 @@ export default {
       return !!this.errorList.filter(e => e.list.length !== 0).length;
     },
     errorList: function() {
+      console.log("ERROR_LIST");
       return [
         { name: "Ошибки в строках", list: this.rowWithError },
         { name: "Необходимые заголовки", list: this.missReqHeaders },
@@ -438,7 +439,6 @@ export default {
         this.checkHeaders();
         this.markNumberCol();
         this.calculateCells();
-
 
         this.err.statusError = this.haveError;
         this.err.error = [...this.errorList];
@@ -810,10 +810,14 @@ export default {
         !this.doubleHeaders.length;
     },
     setRowWithError: function() {
+      console.log("SET_ROW_WITH_ERROR");
       this.rowWithError = [];
       this.cellsByRow.forEach((e, i) =>
         e.includes(false) ? this.rowWithError.push(i + 1) : ""
       );
+      console.log("+++++++" + this.rowWithError.length);
+      console.log(this.errorList);
+
     },
     gaussRound(num, decimalPlaces) {
       var d = decimalPlaces || 0,

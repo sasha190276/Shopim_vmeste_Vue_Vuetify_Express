@@ -53,9 +53,9 @@
           ></v-date-picker>
         </v-menu>
       </v-flex>
-<!--      <v-flex>-->
-<!--        <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>-->
-<!--      </v-flex>-->
+      <v-flex>
+        <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>
+      </v-flex>
     </v-layout>
     <v-layout
       v-show="haveErrInTable[0].statusError"
@@ -175,12 +175,15 @@ export default {
       dateTimeRenderOption: "SERIAL_NUMBER"
     });
     this.table_conf = await TableHeaders.fetchHeadersGoogleSheetsWithRepliesAboutPayments();
-
-    console.log("this.table_conf");
-    console.log(this.table_conf);
-    console.log("this.table_conf");
   },
   watch: {
+    haveErrInTable: {
+      handler: function() {
+        console.log("WATCH_HAVEERROR");
+        console.log(this.haveErrInTable[0]);
+      },
+      deep: true
+    },
     table_conf: {
       handler: async function() {
         console.log("watch table_conf");
@@ -227,12 +230,25 @@ export default {
         let newRow = {};
         newRow["№"] = i + 1;
         row.forEach(function(el, index) {
-          newRow[headersCopy[index + 1].value] =
-            headers[headersCopy[index + 1].value].content === "date"
-              ? new Date(
-                  (el - 25569) * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000
-                )
-              : el;
+          if (headers[headersCopy[index + 1].value].content === "date") {
+            newRow[headersCopy[index + 1].value] = new Date(
+              (el - 25569) * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000
+            );
+          } else if (
+            headers[headersCopy[index + 1].value].content === "number" &&
+            typeof el === "string"
+          ) {
+            let elChecked = el.replace(/[^\d.,]/g, "").replace(",", ".");
+            newRow[headersCopy[index + 1].value] = isNaN(+elChecked)
+              ? el
+              : elChecked;
+          } else if (
+            headers[headersCopy[index + 1].value].content === "string"
+          ) {
+            newRow[headersCopy[index + 1].value] = el + "";
+          } else {
+            newRow[headersCopy[index + 1].value] = el;
+          }
         });
         return newRow;
       });

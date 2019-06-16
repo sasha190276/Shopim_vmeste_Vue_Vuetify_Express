@@ -17,7 +17,7 @@ router.get('/headersGoogleSheetsWithRepliesAboutPayments', async (req, res) => {
     tableConfig.headersOfTable[name] = { ...header };
     if (depForSetDefault) tableConfig.depForChangeValueHeaders.push(name);
   });
-  console.log(tableConfig);
+  //console.log(tableConfig);
   res.send(tableConfig);
 });
 
