@@ -50,7 +50,7 @@
               v-on="on"
             ></v-text-field>
           </template>
-          <v-date-picker v-model="dateEndPick" >
+          <v-date-picker v-model="dateEndPick">
             <v-spacer></v-spacer>
             <v-btn flat color="primary" @click="cancelMenuEnd">Cancel</v-btn>
             <v-btn flat color="primary" @click="setDateEnd">OK</v-btn>
@@ -58,7 +58,7 @@
         </v-dialog>
       </v-flex>
       <v-flex>
-        <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>
+        <p>{{ new Date(dateStart) }} - {{ new Date(dateEnd) }}</p>
       </v-flex>
     </v-layout>
     <v-layout
@@ -276,7 +276,7 @@ export default {
         row.forEach(function(el, index) {
           if (headers[headersCopy[index + 1].value].content === "date") {
             newRow[headersCopy[index + 1].value] = new Date(
-              (el - 25569) * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000
+              (el - 25569) * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000 + 1000
             );
           } else if (
             headers[headersCopy[index + 1].value].content === "number" &&
@@ -312,7 +312,7 @@ export default {
       let strtDate = Date.parse(this.dateStart);
       this.table = this.table.filter(function(elem) {
         let date = Date.parse(elem["Отметка времени"]);
-        return date >= strtDate && date <= endDate + 24 * 60 * 60 * 1000;
+        return date >= strtDate - 3 * 60 * 60 * 1000  && date <= endDate + 24 * 60 * 60 * 1000 -3 * 60 * 60 * 1000;
       });
       this.tableView = this.table_conf.depForChangeValueHeaders !== undefined;
     },
