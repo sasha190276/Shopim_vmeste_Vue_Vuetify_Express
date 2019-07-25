@@ -2,15 +2,16 @@
   <v-flex>
     <v-layout>
       <v-flex xs12 sm6 md4>
-        <v-menu
+        <v-dialog
           v-model="menuStart"
           :close-on-content-click="false"
           :nudge-right="40"
           lazy
+          persistent
           transition="scale-transition"
           offset-y
           full-width
-          min-width="290px"
+          width="290px"
         >
           <template v-slot:activator="{ on }">
             <v-text-field
@@ -21,22 +22,24 @@
               v-on="on"
             ></v-text-field>
           </template>
-          <v-date-picker
-            v-model="dateStartPick"
-            @input="menuStart = false"
-          ></v-date-picker>
-        </v-menu>
+          <v-date-picker v-model="dateStartPick">
+            <v-spacer></v-spacer>
+            <v-btn flat color="primary" @click="cancelMenuStart">Cancel</v-btn>
+            <v-btn flat color="primary" @click="setDateStart">OK</v-btn>
+          </v-date-picker>
+        </v-dialog>
       </v-flex>
       <v-flex xs12 sm6 md4>
-        <v-menu
+        <v-dialog
           v-model="menuEnd"
           :close-on-content-click="false"
           :nudge-right="40"
           lazy
+          persistent
           transition="scale-transition"
           offset-y
           full-width
-          min-width="290px"
+          width="290px"
         >
           <template v-slot:activator="{ on }">
             <v-text-field
@@ -47,11 +50,12 @@
               v-on="on"
             ></v-text-field>
           </template>
-          <v-date-picker
-            v-model="dateEndPick"
-            @input="menuEnd = false"
-          ></v-date-picker>
-        </v-menu>
+          <v-date-picker v-model="dateEndPick" >
+            <v-spacer></v-spacer>
+            <v-btn flat color="primary" @click="cancelMenuEnd">Cancel</v-btn>
+            <v-btn flat color="primary" @click="setDateEnd">OK</v-btn>
+          </v-date-picker>
+        </v-dialog>
       </v-flex>
       <v-flex>
         <p>{{ new Date(dateStart) }} - {{ dateEnd }}</p>
@@ -179,7 +183,7 @@ export default {
   watch: {
     haveErrInTable: {
       handler: function() {
-        console.log("WATCH_HAVEERROR");
+        console.log("WATCH_HAVE_ERROR");
         console.log(this.haveErrInTable[0]);
       },
       deep: true
@@ -192,7 +196,36 @@ export default {
       },
       deep: true
     },
-    dateStartPick: function() {
+    // dateStartPick: function() {
+    //   if (Date.parse(this.dateStartPick) < Date.parse(this.minDate)) {
+    //     this.dateStart = this.minDate;
+    //   } else if (Date.parse(this.dateStartPick) > Date.parse(this.dateEnd)) {
+    //     this.dateStart = this.dateEnd;
+    //   } else if (Date.parse(this.dateStartPick) > Date.parse(this.maxDate)) {
+    //     this.dateStart = this.maxDate;
+    //   } else {
+    //     this.dateStart = this.dateStartPick;
+    //   }
+    //   this.setTable();
+    // },
+    // dateEndPick: function() {
+    //   if (Date.parse(this.dateEndPick) > Date.parse(this.maxDate)) {
+    //     this.dateEnd = this.maxDate;
+    //   } else if (Date.parse(this.dateEndPick) < Date.parse(this.dateStart)) {
+    //     this.dateEnd = this.dateStart;
+    //   } else if (Date.parse(this.dateEndPick) < Date.parse(this.minDate)) {
+    //     this.dateEnd = this.minDate;
+    //   } else {
+    //     this.dateEnd = this.dateEndPick;
+    //   }
+    //   this.setTable();
+    // },
+    dateEnd: function() {
+      this.setTable();
+    }
+  },
+  methods: {
+    setDateStart: function() {
       if (Date.parse(this.dateStartPick) < Date.parse(this.minDate)) {
         this.dateStart = this.minDate;
       } else if (Date.parse(this.dateStartPick) > Date.parse(this.dateEnd)) {
@@ -202,9 +235,17 @@ export default {
       } else {
         this.dateStart = this.dateStartPick;
       }
+      this.closeMenuStart();
       this.setTable();
     },
-    dateEndPick: function() {
+    cancelMenuStart: function() {
+      this.closeMenuStart();
+    },
+    closeMenuStart: function() {
+      this.menuStart = false;
+      this.dateStartPick = this.dateStart;
+    },
+    setDateEnd: function() {
       if (Date.parse(this.dateEndPick) > Date.parse(this.maxDate)) {
         this.dateEnd = this.maxDate;
       } else if (Date.parse(this.dateEndPick) < Date.parse(this.dateStart)) {
@@ -214,13 +255,16 @@ export default {
       } else {
         this.dateEnd = this.dateEndPick;
       }
+      this.closeMenuEnd();
       this.setTable();
     },
-    dateEnd: function() {
-      this.setTable();
-    }
-  },
-  methods: {
+    cancelMenuEnd: function() {
+      this.closeMenuEnd();
+    },
+    closeMenuEnd: function() {
+      this.menuEnd = false;
+      this.dateEndPick = this.dateEnd;
+    },
     setTable: async function() {
       console.log("SET_TABLE!!!");
       let headersCopy = this.headers;
@@ -261,6 +305,8 @@ export default {
           .substr(0, 10);
         this.dateEndPick = this.maxDate;
         this.dateStartPick = this.minDate;
+        this.dateStart = this.minDate;
+        this.dateEnd = this.maxDate;
       }
       let endDate = Date.parse(this.dateEnd);
       let strtDate = Date.parse(this.dateStart);
